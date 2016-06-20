@@ -13,4 +13,4 @@ All_Licenses$expiration_date <- as.Date(All_Licenses$expiration_date, format = "
 All_Licenses <- left_join(All_Licenses, durations, by='license_type')
 All_Licenses$issued_date <- All_Licenses$expiration_date - All_Licenses$license_duration
 
-write.csv(All_Licenses, "data/Liquor/intermediate/All_Licenses_with_issued_date.csv", row.names=FALSE)
+write.csv(All_Licenses, "data/Liquor/intermediate/All_Licenses_v02.csv", row.names=FALSE)

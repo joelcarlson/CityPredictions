@@ -5,14 +5,14 @@ library(dplyr)
 dat <- read.csv('data/Liquor/intermediate/Liquor_Authority_Quarterly_List_of_Active_Licenses.csv', stringsAsFactors=FALSE)
 
 # Convert columns to datetime format, get difference
-dat$V13 <- as.Date(dat$License.Effective.Date, format="%m/%d/%Y")
-dat$V14 <- as.Date(dat$License.Expiration.Date, format="%m/%d/%Y")
-dat$V15 <- as.numeric(dat$V14 - dat$V13)
+dat$License.Effective.Date <- as.Date(dat$License.Effective.Date, format="%m/%d/%Y")
+dat$License.Expiration.Date <- as.Date(dat$License.Expiration.Date, format="%m/%d/%Y")
+dat$diff <- as.numeric(dat$License.Expiration.Date - dat$License.Effective.Date)
 
 # Get median to find how long license classes last until expiration
 license_lengths <- dat %>%
   group_by(License.Type.Code) %>%
-  summarize(median_duration=median(V15, na.rm=TRUE))
+  summarize(median_duration=median(diff, na.rm=TRUE))
 
 license_lengths$License.Type.Code <- tolower(license_lengths$License.Type.Code)
 

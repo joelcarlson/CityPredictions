@@ -1,4 +1,7 @@
-data/Liquor/intermediate/All_Licenses_with_issued_date.csv: data/Liquor/intermediate/license_class_duration.csv
+data/Liquor/intermediate/All_Licenses_v03.csv: data/Liquor/intermediate/All_Licenses_v02.csv
+	Rscript scripts/merge_licenses_with_lat_long.R
+
+data/Liquor/intermediate/All_Licenses_v02.csv: data/Liquor/intermediate/license_class_duration.csv
 	Rscript scripts/merge_durations_with_licenses.R
 
 data/Liquor/intermediate/license_class_duration.csv: data/Liquor/intermediate/All_Licenses.csv
