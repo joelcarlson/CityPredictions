@@ -1,5 +1,6 @@
 /data
 /scratch/scraped_data
+.DS_Store
 
 # History files
 .Rhistory
@@ -34,8 +35,6 @@ vignettes/*.pdf
 # Temporary files created by R markdown
 *.utf8.md
 *.knit.md
-Status API Training Shop Blog About
-© 2016 GitHub, Inc. Terms Privacy Security Contact Help
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

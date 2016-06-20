@@ -7,6 +7,7 @@ if __name__ == "__main__":
     single_CSV_output_path = 'data/Liquor/'
     print "Compiling Liquor CSV files"
     fout = open(single_CSV_output_path + 'All_Licenses.csv', "a")
+    fout.write('premises_name,address,license_class,license_type,expiration_date,license_status,link,zipcode\n')
 
     for csv_file in os.listdir(CSV_file_path):
         f = open(CSV_file_path + csv_file)
