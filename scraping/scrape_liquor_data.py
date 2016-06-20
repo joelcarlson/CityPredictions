@@ -9,6 +9,7 @@ from random import shuffle
 
 import unicodecsv as csv
 
+
 def get_table_by_zip(zipcode, output_path):
 
     driver = webdriver.Firefox()
@@ -19,7 +20,7 @@ def get_table_by_zip(zipcode, output_path):
     results_page = driver.page_source
 
     filename = "output_path/{}.html".format(ouput_path, zipcode)
-    f = open(filename,'w')
+    f = open(filename, 'w')
     f.write(u''.join(results_page).encode('utf-8').strip())
     f.close()
 
@@ -28,11 +29,13 @@ def get_table_by_zip(zipcode, output_path):
 
 
 if __name__ == "__main__":
-    are_you_sure = raw_input("Scraping this data may bring down the NY SLA servers.\nAre you sure you wish to do so? (Y/N)")
+    are_you_sure = raw_input("Scraping this data may bring down the NY SLA servers.\
+    \nAre you sure you wish to do so? (Y/N)")
     if are_you_sure is 'Y':
         start_time = time.time()
         for zipcode in shuffle(NY_zips):
 
             get_table_by_zip(zipcode)
-            print "Saved {} in {} seconds".format(zipcode, round(time.time() - start_time))
+            print "Saved {} in {} seconds".format(zipcode,
+                                        round(time.time() - start_time))
             start_time = time.time()
