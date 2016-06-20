@@ -23,7 +23,7 @@ def get_table_from_parsed_html(parsed_html):
 
 def get_row_vals(result_table, zipcode):
     ret = []
-
+    print zipcode
     for row in result_table[1:]:
         row_vals = []
         ind = 0
