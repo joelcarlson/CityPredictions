@@ -4,9 +4,9 @@ if __name__ == "__main__":
     start_time = time.time()
 
     CSV_file_path = 'data/Liquor/CSVs/'
-    single_CSV_output_path = 'data/Liquor/'
+    single_CSV_output_path = 'data/Liquor/intermediate/'
     print "Compiling Liquor CSV files"
-    fout = open(single_CSV_output_path + 'All_Licenses.csv', "a")
+    fout = open(single_CSV_output_path + 'All_Licenses.csv', "w")
     fout.write('premises_name,address,license_class,license_type,expiration_date,license_status,link,zipcode\n')
 
     for csv_file in os.listdir(CSV_file_path):
