@@ -13,6 +13,9 @@ data/Recreation_Locations/intermediate:
 	mkdir data/Recreation_Locations/intermediate
 
 # Below is liquor data processing
+data/Liquor/liquor_licenses.csv: data/Liquor/intermediate/All_Licenses_v03.csv
+	Rscript scripts/process_liquor_results.R
+
 data/Liquor/intermediate/All_Licenses_v03.csv: data/Liquor/intermediate/All_Licenses_v02.csv
 	Rscript scripts/merge_licenses_with_lat_long.R
 
