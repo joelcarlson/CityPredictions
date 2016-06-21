@@ -1,3 +1,10 @@
+# Below is Food Service Inspection data processing
+data/FoodService/food_ins_grades.csv: data/FoodService/intermediate
+	python scripts/process_food_inspection_results.py
+
+data/FoodService/intermediate:
+	mkdir data/FoodService/intermediate
+
 # Below is recreation data processing
 data/Recreation_Locations/recreation_location.csv: data/Recreation_Locations/intermediate
 	python scripts/get_amenity_info_from_XML_files.py
