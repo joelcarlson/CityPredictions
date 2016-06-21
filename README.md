@@ -29,6 +29,8 @@ https://data.cityofnewyork.us/Housing-Development/Property-Valuation-and-Assessm
 Property Valuation and Assessment data Tax Class (data/Valuation/TC1.mdb):
 https://data.cityofnewyork.us/Housing-Development/Property-Valuation-and-Assessment-data-Tax-Class/qpsp-bm9z
 
+**credit due to http://mazamascience.com/WorkingWithData/?p=168**
+
 Property address list (data/Addresses/):
 https://data.cityofnewyork.us/City-Government/Property-Address-Directory/bc8t-ecyu
 

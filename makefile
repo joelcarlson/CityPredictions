@@ -1,3 +1,11 @@
+# Below is recreation data processing
+data/Recreation_Locations/recreation_location.csv: data/Recreation_Locations/intermediate
+	python scripts/get_amenity_info_from_XML_files.py
+
+data/Recreation_Locations/intermediate:
+	mkdir data/Recreation_Locations/intermediate
+
+# Below is liquor data processing
 data/Liquor/intermediate/All_Licenses_v03.csv: data/Liquor/intermediate/All_Licenses_v02.csv
 	Rscript scripts/merge_licenses_with_lat_long.R
 
