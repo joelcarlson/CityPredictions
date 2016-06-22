@@ -1,5 +1,5 @@
 # Below is Food Service Inspection data processing
-data/FoodService/food_ins_grades.csv: data/FoodService/intermediate
+data/FoodService/food_ins_grades.csv: scripts/process_food_inspection_results.py
 	python scripts/process_food_inspection_results.py
 
 data/FoodService/intermediate:
@@ -13,7 +13,7 @@ data/Recreation_Locations/intermediate:
 	mkdir data/Recreation_Locations/intermediate
 
 # Below is liquor data processing
-data/Liquor/liquor_licenses.csv: data/Liquor/intermediate/All_Licenses_v03.csv
+data/Liquor/liquor_licenses.csv: data/Liquor/intermediate/All_Licenses_v03.csv, scripts/process_liquor_results.R
 	Rscript scripts/process_liquor_results.R
 
 data/Liquor/intermediate/All_Licenses_v03.csv: data/Liquor/intermediate/All_Licenses_v02.csv

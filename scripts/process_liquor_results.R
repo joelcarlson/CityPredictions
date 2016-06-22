@@ -25,7 +25,8 @@ liquor_licenses <- full_join(liquor_licenses_issued, liquor_licenses_expired, by
 # In this case we assume that we have complete data
 # thus any missing values imply 0
 liquor_licenses <- liquor_licenses[!is.na(liquor_licenses$year),]
-#tiny bit of cleaning
+
+#tiny bit of cleaning, these rows have nonsensical years
 liquor_licenses[(liquor_licenses$year == 2120), "year"] <- 2020
 liquor_licenses[(liquor_licenses$year == 2117), "year"] <- 2017
 liquor_licenses <- liquor_licenses[-which(liquor_licenses$year == 198), ]

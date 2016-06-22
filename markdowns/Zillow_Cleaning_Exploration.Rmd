@@ -33,7 +33,7 @@ filter_zillow_data <- function(dat, date_start=7){
 ### Median Listing Prices by Neighborhood
 
 ```{r, warning=FALSE}
-Neighborhood_MedianListingPrice_AllHomes <- read.csv("~/Documents/github/CityPredictions/data/Zillow/Neighborhood_MedianListingPrice_AllHomes.csv")
+Neighborhood_MedianListingPrice_AllHomes <- read.csv("~/Documents/github/CityPredictions/data/Zillow/raw/Neighborhood_MedianListingPrice_AllHomes.csv")
 
 dat_med_listing <- filter_zillow_data(Neighborhood_MedianListingPrice_AllHomes)
 
@@ -49,7 +49,7 @@ ggplot(data=dat_med_listing,
 ### Median Sold Prices by Neighborhood
 
 ```{r, warning=FALSE}
-Neighborhood_MedianSoldPrice_AllHomes <- read.csv("~/Documents/github/CityPredictions/data/Zillow/Neighborhood_MedianSoldPrice_AllHomes.csv")
+Neighborhood_MedianSoldPrice_AllHomes <- read.csv("~/Documents/github/CityPredictions/data/Zillow/raw/Neighborhood_MedianSoldPrice_AllHomes.csv")
 
 dat_med_sold <- filter_zillow_data(Neighborhood_MedianSoldPrice_AllHomes, date_start=8)
 
@@ -103,7 +103,7 @@ ggplot(data=medians_all, aes(x=date, y=Difference, group=RegionName, col=RegionN
 
 ```{r, warning=FALSE}
 # Read data
-Neighborhood_MedianRentalPrice_1Bedroom <- read.csv("~/Documents/github/CityPredictions/data/Zillow/Neighborhood_MedianRentalPrice_1Bedroom.csv")
+Neighborhood_MedianRentalPrice_1Bedroom <- read.csv("~/Documents/github/CityPredictions/data/Zillow/raw/Neighborhood_MedianRentalPrice_1Bedroom.csv")
 
 dat_med_rental_1br <- filter_zillow_data(Neighborhood_MedianRentalPrice_1Bedroom)
 #There is a super jaggy data point. We can find it by looking for the point with the ridiculous SD
@@ -134,7 +134,7 @@ ggplot(data=dat_med_rental_1br, aes(x=date, y=detrend_val, group=RegionName, col
 ### Median Rental Price for 2BR
 
 ```{r, warning=FALSE}
-Neighborhood_MedianRentalPrice_2Bedroom <- read.csv("~/Documents/github/CityPredictions/data/Zillow/Neighborhood_MedianRentalPrice_2Bedroom.csv")
+Neighborhood_MedianRentalPrice_2Bedroom <- read.csv("~/Documents/github/CityPredictions/data/Zillow/raw/Neighborhood_MedianRentalPrice_2Bedroom.csv")
 
 dat_med_rental_2br <- filter_zillow_data(Neighborhood_MedianRentalPrice_2Bedroom, date_start=7)
 
@@ -150,7 +150,7 @@ ggplot(data=dat_med_rental_2br, aes(x=date, y=value, group=RegionName, col=Regio
 ### Median Rental Price for 3BR
 
 ```{r, warning=FALSE}
-Neighborhood_MedianRentalPrice_3Bedroom <- read.csv("~/Documents/github/CityPredictions/data/Zillow/Neighborhood_MedianRentalPrice_3Bedroom.csv")
+Neighborhood_MedianRentalPrice_3Bedroom <- read.csv("~/Documents/github/CityPredictions/data/Zillow/raw/Neighborhood_MedianRentalPrice_3Bedroom.csv")
 
 dat_med_rental_3br <- filter_zillow_data(Neighborhood_MedianRentalPrice_3Bedroom, date_start=7)
 
@@ -166,7 +166,7 @@ ggplot(data=dat_med_rental_3br, aes(x=date, y=value, group=RegionName, col=Regio
 ### Median Rental Price for 4BR
 
 ```{r, warning=FALSE}
-Neighborhood_MedianRentalPrice_4Bedroom <- read.csv("~/Documents/github/CityPredictions/data/Zillow/Neighborhood_MedianRentalPrice_4Bedroom.csv")
+Neighborhood_MedianRentalPrice_4Bedroom <- read.csv("~/Documents/github/CityPredictions/data/Zillow/raw/Neighborhood_MedianRentalPrice_4Bedroom.csv")
 
 dat_med_rental_4br <- filter_zillow_data(Neighborhood_MedianRentalPrice_4Bedroom, date_start=7)
 
@@ -182,7 +182,7 @@ ggplot(data=dat_med_rental_4br, aes(x=date, y=value, group=RegionName, col=Regio
 ### Median Rental Price for All Homes
 
 ```{r, warning=FALSE}
-Neighborhood_MedianRentalPrice_AllHomes <- read.csv("~/Documents/github/CityPredictions/data/Zillow/Neighborhood_MedianRentalPrice_AllHomes.csv")
+Neighborhood_MedianRentalPrice_AllHomes <- read.csv("~/Documents/github/CityPredictions/data/Zillow/raw/Neighborhood_MedianRentalPrice_AllHomes.csv")
 
 dat_med_rental_AllHomes <- filter_zillow_data(Neighborhood_MedianRentalPrice_AllHomes, date_start=7)
 
