@@ -17,12 +17,12 @@ if __name__ == "__main__":
     # Reindex and extract required info
     ins_results.index = ins_results['INSPECTION DATE']
     ins_results['Year'] = ins_results.index.year
-    ins_results['Quarter'] = ins_results.index.quarter
+    ins_results['Month'] = ins_results.index.month
     print "    Dates converted"
 
     # Collect counts of critical flags and grades by zipcode/year/quarter
-    ins_agg_critical = pd.DataFrame(ins_results.groupby(['ZIPCODE', 'Year', 'Quarter', 'CRITICAL FLAG'])['CRITICAL FLAG'].agg('count'))
-    ins_agg_grade = pd.DataFrame(ins_results.groupby(['ZIPCODE', 'Year', 'Quarter', 'GRADE'])['GRADE'].agg('count'))
+    ins_agg_critical = pd.DataFrame(ins_results.groupby(['ZIPCODE', 'Year', 'Month', 'CRITICAL FLAG'])['CRITICAL FLAG'].agg('count'))
+    ins_agg_grade = pd.DataFrame(ins_results.groupby(['ZIPCODE', 'Year', 'Month', 'GRADE'])['GRADE'].agg('count'))
 
     print "    Grouping completed"
     # Save
