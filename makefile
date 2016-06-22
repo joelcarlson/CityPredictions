@@ -1,3 +1,7 @@
+# Below is Taxi data processing
+data/NY_Info/zip_coords_dict.pickle:
+	python scriptsbuild_NY_zip_coord_dict.py
+
 # Below is Food Service Inspection data processing
 data/FoodService/food_ins_grades.csv: scripts/process_food_inspection_results.py
 	python scripts/process_food_inspection_results.py

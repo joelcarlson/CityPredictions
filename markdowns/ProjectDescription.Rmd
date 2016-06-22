@@ -1,0 +1,35 @@
+---
+title: "Improving the Zillow Model"
+author: "Joel Carlson"
+date: "June 22, 2016"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Introduction
+
+Zillow has created a price index for homes that is based upon prprietary machine learning algorithms which predict home values each year, at a number of different levels of geographic granularity. This is known as the Zillow Home Value Index (ZHVI). In this project I aim to leverage the excellent work that Zillow has already done, and add several features to their models to create more accurate predictions moving forward.
+
+This is perhaps a lofty goal - Zillow has a tema of data scientists and a twitter-backed bankroll to make their predictions as accurate as possible. Is it feasible that the addition of a few new features could increase the accuracy of their models? Read on to find out.
+
+# Zillow
+
+There are a number of quality posts on the Zillow blog describing their methodology, here are several [1](http://www.zillow.com/research/zhvi-methodology-6032/), [2](http://cdn1.blog-media.zillowstatic.com/3/ZHVI-InfoSheet-04ed2b.pdf), [3](http://www.zillow.com/research/zillow-home-value-forecast-methodology-2-3740/). 
+
+# Prediction Target
+
+The goal of this work is not to usurp the Zillow model, rather, it is to identify regions which are expected to increase in value in the comine year (or, alternately, identify areas which would be likely to decrease in value). This information would be useful to an investor looking to make profit via real estate.
+
+The prediction target is then the difference between the median sale price and median list price in a given zip code. 
+
+The features that will likely be included in the model:
+  - Number of sales in that region on zillow in the previous year
+  - The zillow home value index for the previous years
+    - Will consider the ZHVI of all home, 1br, 2br, 3br, etc
+    - Alt: Top middle bottom tier
+  - The number of liquor licenses awarded and expired in that region
+  - The number of failing restaurant inspections in that region
+  
