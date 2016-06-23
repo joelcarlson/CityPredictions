@@ -9,5 +9,5 @@ gshuf -n 1000000 data/Taxis/raw/yellow_tripdata_2013.csv > data/Taxis/intermedia
 echo Sampling 2014 taxi data
 gshuf -n 1000000 data/Taxis/raw/nyc_taxi_data.csv > data/Taxis/intermediate/yellow_tripdata_2014_sample.csv
 echo Sampling 2015 taxi data
-gshuf -n 1000000 data/Taxis/raw/yellow_tripdata_2015.csv > data/Taxis/intermediate/yellow_tripdata_2015_sample.csv
+gshuf -n 1000000 data/Taxis/raw/yellow_tripdata_2015-01-06.csv > data/Taxis/intermediate/yellow_tripdata_2015_sample.csv
 echo Taxi sampling finished
