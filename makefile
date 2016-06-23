@@ -1,4 +1,7 @@
 # Below is Taxi data processing
+data/Taxis/intermediate/yellow_tripdate_2010_sample.csv:data/Taxis/raw/yellow_tripdata_2011.csv
+	sh scripts/get_random_taxi_samples.sh
+
 data/NY_Info/zip_coords_dict.pickle:
 	python scriptsbuild_NY_zip_coord_dict.py
 

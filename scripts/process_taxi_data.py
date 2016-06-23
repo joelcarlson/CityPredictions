@@ -1,5 +1,7 @@
 from datetime import datetime
 from collections import Counter
+import random
+import subprocess
 import os
 import fnmatch
 import time
@@ -48,7 +50,7 @@ if __name__ == "__main__":
     with open('data/NY_Info/zip_coords_dict.pickle', 'rb') as handle:
         zip_coords_dict = pickle.load(handle)
 
-    taxis = create_taxi_dict(range(2010,2016))
+    taxis = create_taxi_dict(range(2010,2017))
 
     #We will loop over each fill with the extension *.csv
     # We use the unix command 'wc -l filename' to get the length of the
@@ -58,25 +60,39 @@ if __name__ == "__main__":
     taxi_paths = fnmatch.filter(os.listdir(input_path), '*.csv')
 
     for taxi_data_year in taxi_paths:
+
+        # get the size of data - this command is slow
+        n_rows = subprocess.check_output(['wc', '-l', 'data/Features/feature_data.csv'])
+        #n_rows = float(n_rows.split()[0])
+        n_rows = 1000000000
         i = 0
 
         test_lst = list()
 
-        for line in open(input_path + taxi_data_year):
+        #for line in open(input_path + taxi_data_year):
+        f = open(input_path + taxi_data_year)
+        while True:
             i += 1
+
             if i >=1000:
                 break
+            offset = random.randrange(n_rows)
+            f.seek(offset)                  #go to random position
+            f.readline()
+            random_line = f.readline()
 
-            row = line.split(',')
+            row = random_line.split(',')
+
 
 
             try:
                 date = datetime.strptime(row[1], '%Y-%m-%d %H:%M:%S')
-
+                print date
                 lat_lon = get_lat_lon(*row)
 
                 pickup_zip = get_zip_from_lat_lon(lat_lon['pickup']['lat'], lat_lon['pickup']['lon'])
                 dropoff_zip = get_zip_from_lat_lon(lat_lon['dropoff']['lat'], lat_lon['dropoff']['lon'])
+
 
                 taxis[date.year][date.month]['pickup'][pickup_zip] += 1
                 taxis[date.year][date.month]['dropoff'][dropoff_zip] += 1
@@ -86,4 +102,9 @@ if __name__ == "__main__":
         print "Processed {} rows in {} seconds".format(i, round(time.time() - start_time,3))
         with open(output_path + os.path.basename(taxi_data_year) + ".pickle", 'wb') as handle:
           pickle.dump(taxis, handle)
-    print taxi_paths
+
+
+
+# Get the lat long to zip correspondence dictionary
+with open('yellow_tripdata_2011.csv.pickle', 'rb') as handle:
+    taxis = pickle.load(handle)
