@@ -1,0 +1,66 @@
+---
+title: "A Principled Approach to the Time Series Data"
+author: "Joel Carlson"
+date: "June 23, 2016"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Introduction
+
+TThe data we have is a compilation of time series data from several different sources. Mainly, we will be attempting to forecast the change in rental prices of units in New York by their zip code, with features such as:
+
+ - The number of liquor licenses issued in that zip
+ - The number of liquor licenses expired in that zip
+ - The number of taxi dropoffs
+ - The number of taxi dropoffs
+ - The zillow home value index?
+ 
+# Data
+
+```{r, warning=FALSE, message=FALSE, fig.width=12, fig.height=12}
+library(dplyr); library(ggplot2); library(tidyr); library(stringr)
+library(forecast); library(gridExtra)
+dat <- read.csv('../data/all_data.csv')
+
+#First we will create a date-time column
+dat$date <- paste0(dat$year, '/', str_pad(dat$month, 2, side='left', '0'), '/15')
+dat$date <- as.Date(dat$date, format="%Y/%m/%d")
+one_zip <- ggplot(data=filter(dat, zipcode==10004, date > "2009/12/30", date < "2015/01/01", dropoff>100), aes(x=date, y=dropoff, col=month)) + geom_point() + geom_smooth(se=FALSE) + geom_line() + ggtitle("dropoffs per Month in 10003") + guides(col=FALSE)
+
+means_by_year <- filter(dat, year > 2009, year < 2015)  %>% 
+  group_by(year, month)  %>% 
+  summarize("Mean_Liquor_Licenses" = mean(n_issued, na.rm=TRUE),
+            "Mean_dropoffs"=mean(dropoff, na.rm=TRUE), 
+            "Mean_MRP_1Br" = mean(MRP_1Br, na.rm=TRUE),
+            "Mean_ZHVI" = mean(zhvi, na.rm=TRUE))
+
+means_by_year$date <- paste0(means_by_year$year, '/', str_pad(means_by_year$month, 2, side='left', '0'), '/15')
+means_by_year$date <- as.Date(means_by_year$date, format="%Y/%m/%d")
+
+all_zips <- ggplot(data=filter(means_by_year, year > 2009, Mean_dropoffs > 200), aes(x=date, y=Mean_dropoffs, col=month))+ geom_point() + geom_smooth(se=FALSE) + geom_line() + ggtitle("Mean dropoffs by Month, All Zips") + guides(col=FALSE)
+
+l_one_zip <- ggplot(data=filter(dat, zipcode==10004, date > "2009/12/30", date < "2015/01/01"), aes(x=date, y=n_issued, col=month)) + geom_point() + geom_smooth(se=FALSE) + geom_line() + ggtitle("Liquor Licenses in 10004") + guides(col=FALSE)
+
+l_all_zips <- ggplot(data=means_by_year, aes(x=date, y=Mean_Liquor_Licenses, col=month))+ geom_point() + geom_smooth(se=FALSE) + geom_line() + ggtitle("Mean Liquor Licenses, All Zips") + guides(col=FALSE)
+
+
+MRP_one_zip <- ggplot(data=filter(dat, zipcode==10004, date > "2009/12/30", date < "2015/01/01"), aes(x=date, y=MRP_1Br, col=month)) + geom_point() + geom_smooth(se=FALSE) + geom_line() + ggtitle("Mean Rental Price in 10004") + guides(col=FALSE)
+
+MRP_all_zips <- ggplot(data=means_by_year, aes(x=date, y=Mean_MRP_1Br, col=month))+ geom_point() + geom_smooth(se=FALSE) + geom_line() + ggtitle("Mean Rental Price, All Zips") + guides(col=FALSE)
+
+zhvi_one_zip <- ggplot(data=filter(dat, zipcode==10004, date > "2009/12/30", date < "2015/01/01"), aes(x=date, y=zhvi, col=month)) + geom_point() + geom_smooth(se=FALSE) + geom_line() + ggtitle("ZHVI in 10004") + guides(col=FALSE)
+
+zhvi_all_zips <- ggplot(data=means_by_year, aes(x=date, y=Mean_ZHVI, col=month))+ geom_point() + geom_smooth(se=FALSE) + geom_line() + ggtitle("Mean ZHVI, All Zips") + guides(col=FALSE)
+
+grid.arrange(one_zip, all_zips, l_one_zip, l_all_zips, MRP_one_zip, MRP_all_zips, zhvi_one_zip, zhvi_all_zips, ncol=2)
+
+# Weird missing data...
+means_by_year[which(means_by_year$Mean_dropoffs < 200),]
+
+
+
+```

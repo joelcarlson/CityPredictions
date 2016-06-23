@@ -1,6 +1,9 @@
 /data
+/EDA
+/scratch
 /scratch/scraped_data
 .DS_Store
+
 
 # History files
 .Rhistory
