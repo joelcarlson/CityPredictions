@@ -77,5 +77,10 @@ if __name__ == "__main__":
                 pass
 
         print "Processed {} rows in {} seconds".format(i, round(time.time() - start_time,3))
+        # Save intermediate steps
         with open(output_path + os.path.splitext(taxi_data_year)[0] + ".pickle", 'wb') as handle:
           pickle.dump(taxis, handle)
+
+
+    with open(output_path + "taxi_data.pickle", 'wb') as handle:
+      pickle.dump(taxis, handle)
