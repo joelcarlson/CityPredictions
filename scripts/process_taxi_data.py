@@ -60,8 +60,7 @@ if __name__ == "__main__":
         i = 0
         for line in open(input_path + taxi_data_year):
             i += 1
-            if i >= 100000:
-                break
+
             row = line.split(',')
 
             try:

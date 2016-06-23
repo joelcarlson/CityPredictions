@@ -1,8 +1,11 @@
 # Below is Taxi data processing
-data/Taxis/taxi_data.csv:data/Taxis/pickle_files/yellow_tripdata_2015_sample.pickle
+data/Taxis/taxi_data.csv:data/Taxis/pickle_files/taxi_data.pickle
 	python scripts/combine_taxi_years.py
 
-data/Taxis/intermediate/yellow_tripdate_2010_sample.csv:data/Taxis/raw/yellow_tripdata_2011.csv
+data/Taxis/pickle_files/taxi_data.pickle:data/Taxis/intermediate/yellow_tripdata_2015_sample.csv
+	python scripts/process_taxi_data.py
+
+data/Taxis/intermediate/yellow_tripdate_2010_sample.csv:data/Taxis/raw/yellow_tripdata_2010.csv
 	sh scripts/get_random_taxi_samples.sh
 
 data/NY_Info/zip_coords_dict.pickle:

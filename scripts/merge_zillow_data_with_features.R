@@ -1,9 +1,10 @@
-library(dplyr); library(reshape2)
+library(dplyr); library(reshape2); library(lubridate)
 
 # ZHVI data for all homes
 Zip_Zhvi_AllHomes <- read.csv("data/Zillow/Zip/Zip_Zhvi_AllHomes.csv")
 
 # 
+taxi_data <- read.csv('data/Taxis/taxi_data.csv')
 
 feature_data <- read.csv('data/Features/feature_data.csv')
 
@@ -22,6 +23,8 @@ dat_m <- select(dat_m, -variable)
 colnames(dat_m) <- c("zipcode", "zhvi", "year", "month")
 
 #feature_data <- left_join(dat_m, feature_data, by=c("zipcode", "year", "month"))
+feature_data <- full_join(taxi_data, feature_data, by=c("zipcode", "year", "month"))
+
 feature_data <- full_join(dat_m, feature_data, by=c("zipcode", "year", "month"))
 
 #==================
@@ -54,19 +57,20 @@ read_zillow_data <- function(file_path, val_name, RegionID=FALSE){
 }
 
 
+# Since there are only sale prices for the all homes category, it seems this data is not worth exploring
 
 #List prices MLP = MedianListingPrice, Br=bedroom, AH = AllHomes, CC = CondoCoop, DT = DuplexTriplex
-MLP_1Br <- read_zillow_data("data/Zillow/Zip/Zip_MedianListingPrice_1Bedroom.csv", "MLP_1Br")
-MLP_2Br <- read_zillow_data("data/Zillow/Zip/Zip_MedianListingPrice_2Bedroom.csv", "MLP_2Br")
-MLP_3Br <- read_zillow_data("data/Zillow/Zip/Zip_MedianListingPrice_3Bedroom.csv", "MLP_3Br")
-MLP_4Br <- read_zillow_data("data/Zillow/Zip/Zip_MedianListingPrice_4Bedroom.csv", "MLP_4Br")
-MLP_5Br <- read_zillow_data("data/Zillow/Zip/Zip_MedianListingPrice_5BedroomOrMore.csv", "MLP_5Br")
-MLP_AH <- read_zillow_data("data/Zillow/Zip/Zip_MedianListingPrice_AllHomes.csv", "MLP_AH")
-MLP_CC <- read_zillow_data("data/Zillow/Zip/Zip_MedianListingPrice_CondoCoop.csv", "MLP_CC")
-MLP_DT <- read_zillow_data("data/Zillow/Zip/Zip_MedianListingPrice_DuplexTriplex.csv", "MLP_DT")
+#MLP_1Br <- read_zillow_data("data/Zillow/Zip/Zip_MedianListingPrice_1Bedroom.csv", "MLP_1Br")
+#MLP_2Br <- read_zillow_data("data/Zillow/Zip/Zip_MedianListingPrice_2Bedroom.csv", "MLP_2Br")
+#MLP_3Br <- read_zillow_data("data/Zillow/Zip/Zip_MedianListingPrice_3Bedroom.csv", "MLP_3Br")
+#MLP_4Br <- read_zillow_data("data/Zillow/Zip/Zip_MedianListingPrice_4Bedroom.csv", "MLP_4Br")
+#MLP_5Br <- read_zillow_data("data/Zillow/Zip/Zip_MedianListingPrice_5BedroomOrMore.csv", "MLP_5Br")
+#MLP_AH <- read_zillow_data("data/Zillow/Zip/Zip_MedianListingPrice_AllHomes.csv", "MLP_AH")
+#MLP_CC <- read_zillow_data("data/Zillow/Zip/Zip_MedianListingPrice_CondoCoop.csv", "MLP_CC")
+#MLP_DT <- read_zillow_data("data/Zillow/Zip/Zip_MedianListingPrice_DuplexTriplex.csv", "MLP_DT")
 
 #Sale Prices
-MSP_AH <- read_zillow_data("data/Zillow/Zip/Zip_MedianSoldPrice_AllHomes.csv", "MSP_AH", RegionID=TRUE)
+#MSP_AH <- read_zillow_data("data/Zillow/Zip/Zip_MedianSoldPrice_AllHomes.csv", "MSP_AH", RegionID=TRUE)
 
 # Rentals
 MRP_1Br <- read_zillow_data("data/Zillow/Zip/Zip_MedianRentalPrice_1Bedroom.csv", "MRP_1Br")
@@ -77,4 +81,15 @@ MRP_5Br <- read_zillow_data("data/Zillow/Zip/Zip_MedianRentalPrice_5BedroomOrMor
 MRP_AH <- read_zillow_data("data/Zillow/Zip/Zip_MedianRentalPrice_AllHomes.csv", "MRP_AH")
 MRP_CC <- read_zillow_data("data/Zillow/Zip/Zip_MedianRentalPrice_CondoCoop.csv", "MRP_CC")
 MRP_DT <- read_zillow_data("data/Zillow/Zip/Zip_MedianRentalPrice_DuplexTriplex.csv", "MRP_DT")
+
+feature_data <- left_join(feature_data, MRP_1Br, by=c("zipcode", "year", "month"))
+feature_data <- left_join(feature_data, MRP_2Br, by=c("zipcode", "year", "month"))
+feature_data <- left_join(feature_data, MRP_3Br, by=c("zipcode", "year", "month"))
+feature_data <- left_join(feature_data, MRP_4Br, by=c("zipcode", "year", "month"))
+feature_data <- left_join(feature_data, MRP_5Br, by=c("zipcode", "year", "month"))
+feature_data <- left_join(feature_data, MRP_AH, by=c("zipcode", "year", "month"))
+feature_data <- left_join(feature_data, MRP_CC, by=c("zipcode", "year", "month"))
+feature_data <- left_join(feature_data, MRP_DT, by=c("zipcode", "year", "month"))
+
+write.csv(feature_data, "data/all_data.csv", row.names=FALSE)
 

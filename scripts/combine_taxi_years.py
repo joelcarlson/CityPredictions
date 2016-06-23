@@ -2,7 +2,7 @@ import pickle
 import pandas as pd
 
 if __name__ == "__main__":
-    with open("data/Taxis/pickle_files/yellow_tripdata_2015_sample.pickle", 'rb') as handle:
+    with open("data/Taxis/pickle_files/taxi_data.pickle", 'rb') as handle:
         taxis = pickle.load(handle)
 
     dat = pd.DataFrame()
