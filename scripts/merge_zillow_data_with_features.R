@@ -91,5 +91,8 @@ feature_data <- left_join(feature_data, MRP_AH, by=c("zipcode", "year", "month")
 feature_data <- left_join(feature_data, MRP_CC, by=c("zipcode", "year", "month"))
 feature_data <- left_join(feature_data, MRP_DT, by=c("zipcode", "year", "month"))
 
+feature_data$date <- paste0(feature_data$year, '/', str_pad(feature_data$month, 2, side='left', '0'), '/15')
+feature_data$date <- as.Date(feature_data$date, format="%Y/%m/%d")
+
 write.csv(feature_data, "data/all_data.csv", row.names=FALSE)
 

@@ -23,12 +23,385 @@ TThe data we have is a compilation of time series data from several different so
 
 ```{r, warning=FALSE, message=FALSE, fig.width=12, fig.height=12}
 library(dplyr); library(ggplot2); library(tidyr); library(stringr)
-library(forecast); library(gridExtra)
-dat <- read.csv('../data/all_data.csv')
+library(forecast); library(gridExtra); library(knitr)
+dat <- read.csv('../data/all_data.csv', stringsAsFactors = FALSE)
+dat$date <- as.Date(dat$date)
 
-#First we will create a date-time column
+#We will restrict analysis to data from 2010 to 2016
+# Sadly the data from 2015 is incomplete and unusable at this point
+dat <- filter(dat, date > "2010-12-15", date < "2015-01-01")
+# We will also not use the restaurant data for now
+dat <- select(dat, zipcode, date, year, month, zhvi, contains("MRP"), n_issued, n_expired, pickup, dropoff)
+
+
+```
+
+# Data Cleaning
+
+We need to clean up the data a little bit before plotting and modeling
+
+### Missing Dates and Zips
+
+We need to expand the data such that all dates are included, and each zip is represented
+
+```{r}
+dat_index <- expand.grid("year"=c(2011:2014), "month"=c(1:12), "zipcode"=unique(dat$zipcode))
+dat <- full_join(dat_index, dat, by=c("zipcode", "year", "month"))
+
+# Fix the dates
 dat$date <- paste0(dat$year, '/', str_pad(dat$month, 2, side='left', '0'), '/15')
 dat$date <- as.Date(dat$date, format="%Y/%m/%d")
+```
+
+### Handling those dates where the Taxis didnt exist
+
+Why is this happening? I'm not sure - I couldnt find anything online to indicate a taxi outage or other external cause. I can only assume it is some sampling error?
+
+```{r, warning=FALSE}
+# Find those dates
+weird_dates <- dat %>% group_by(year, month) %>% summarize("mean_pickups"=mean(pickup, na.rm=TRUE))
+ggplot(data=weird_dates, aes(x=month, y=mean_pickups, col=as.factor(year), group=year)) + 
+  geom_point() + 
+  geom_line() +
+  ggtitle("Some weird dates")
+```
+
+This is pretty gnarly, but what I'm going to do is, for each zipcode, set the value of 2/2011, 4/2011, 12/2011, and 7/2012 to the mean value of the months they are between.
+
+```{r, echo=FALSE}
+#this is really, really, reallllllllly bad practice
+average_month_before_after <- function(bad_year, bad_month, zipcode){
+  after = dat[dat$year == bad_year & dat$month == bad_month + 1 & dat$zipcode == zipcode, c("pickup", "dropoff")] 
+  before = dat[dat$year == bad_year & dat$month == bad_month - 1 & dat$zipcode == zipcode, c("pickup", "dropoff")]
+  
+  # Modify the dataframe outside of the function....
+  dat[dat$year == bad_year & dat$month == bad_month & dat$zipcode == zipcode, "pickup"] <<- (after$pickup + before$pickup)/2
+    dat[dat$year == bad_year & dat$month == bad_month & dat$zipcode == zipcode, "dropoff"] <<- (after$dropoff + before$dropoff)/2
+}
+
+for(zip in c(unique(dat$zipcode))){
+  average_month_before_after(2011,2,zip)
+  average_month_before_after(2011,4,zip)
+  average_month_before_after(2012,7,zip) 
+  
+  # Do 12/2011 ...
+  after = dat[dat$year == 2012 & dat$month == 1 & dat$zipcode == zip, c("pickup", "dropoff")] 
+  before = dat[dat$year == 2011 & dat$month == 11 & dat$zipcode == zip, c("pickup", "dropoff")]
+  
+  # Modify the dataframe outside of the function....
+  dat[dat$year == 2011 & dat$month == 12 & dat$zipcode == zip, "pickup"] <- (after$pickup + before$pickup)/2
+  dat[dat$year == 2011 & dat$month == 12 & dat$zipcode == zip, "dropoff"] <- (after$dropoff + before$dropoff)/2
+}
+
+```
+
+I did some black magic that I don't want the world to see to fix them...
+
+```{r, warning=FALSE, echo=FALSE}
+weird_dates <- dat %>% group_by(year, month) %>% summarize("mean_pickups"=mean(pickup, na.rm=TRUE))
+ggplot(data=weird_dates, aes(x=month, y=mean_pickups, col=as.factor(year), group=year)) + 
+  geom_point() + 
+  geom_line() +
+  ggtitle("Fixed Dates")
+```
+
+### Narrowing Focus
+
+The data at this moment is a little too large to be easily understood. I will choose a single borough to focus on for now, and hope to expand the model at a later time. 
+
+The borough decision will be based on the below table, which shows the percentage of complete values in several columns:
+
+```{r, echo=FALSE}
+# Explore by borough
+load("../data/NY_Info/manhattan_zips.RData")
+load("../data/NY_Info/brooklyn_zips.RData")
+load("../data/NY_Info/bronx_zips.RData")
+load("../data/NY_Info/queens_zips.RData")
+load("../data/NY_Info/staten_island_zips.RData")
+load("../data/NY_Info/NY_zips.RData")
+
+#dat_man <- filter(dat, zipcode %in% manhattan)
+#dat_brk <- filter(dat, zipcode %in% brooklyn)
+#dat_brx <- filter(dat, zipcode %in% bronx)
+#dat_que <- filter(dat, zipcode %in% queens)
+#dat_sta <- filter(dat, zipcode %in% staten_island)
+
+get_params <- function(zips, name, dat){
+  #Return % of non-NA values in each borough
+  dat <- filter(dat, zipcode %in% zips)
+  list("borough"=name,
+       "MRP_1Br"=round(100*sum(!is.na(dat$MRP_1Br))/nrow(dat),1),
+       "ZHVI"=round(100*sum(!is.na(dat$zhvi))/nrow(dat),1),
+       "pickup"=round(100*sum(!is.na(dat$pickup))/nrow(dat),1),
+       "dropoff"=round(100*sum(!is.na(dat$dropoff))/nrow(dat),1),
+       "issued"=round(100*sum(!is.na(dat$n_issued))/nrow(dat),1),
+       "expired"=round(100*sum(!is.na(dat$n_expired))/nrow(dat),1))
+}
+
+params <- list(get_params(zips=manhattan,"manhattan", dat), 
+          get_params(zips=brooklyn,"brooklyn", dat),
+          get_params(zips=bronx, "bronx", dat),
+          get_params(zips=queens, "queens", dat),
+          get_params(zips=staten_island, "staten_island", dat))
+
+kable(do.call(rbind.data.frame, params), caption="Percentage of Non-NA Values")
+
+```
+
+
+Based on this, I will use the Brooklyn data moving forward.
+
+```{r}
+dat <- filter(dat, zipcode %in% brooklyn)
+```
+
+
+### Handling NA values in taxi data and liquor data
+
+I think it is safe to assume that, given the volume of taxi data, if there are missing values it means there were no taxi pickups or dropoffs in those time periods, so NAs will be filled with 0's
+
+```{r}
+dat[which(is.na(dat$n_issued)), "n_issued"] <- 0
+dat[which(is.na(dat$n_expired)), "n_expired"] <- 0
+dat[which(is.na(dat$pickup)), "pickup"] <- 0
+dat[which(is.na(dat$dropoff)), "dropoff"] <- 0
+```
+
+### Collecting Zipcodes with large numbers of missing values
+
+```{r}
+missing_vals <- dat %>% 
+  group_by(zipcode) %>% 
+  summarize("zhvi_NAs"=100*round(sum(is.na(zhvi))/n(),3),
+            "MRP_1Br_NAs"=100*round(sum(is.na(MRP_1Br))/n(),3),
+            "MRP_2Br_NAs"=100*round(sum(is.na(MRP_2Br))/n(),3),
+            "MRP_3Br_NAs"=100*round(sum(is.na(MRP_3Br))/n(),3),
+            "MRP_AH_NAs"=100*round(sum(is.na(MRP_AH))/n(),3),
+            "MRP_DT_NAs"=100*round(sum(is.na(MRP_DT))/n(),3)) %>% 
+  arrange(MRP_1Br_NAs)
+```
+
+We see that, for ZHVI, either they have the data or they dont - that is, they either have ZHVI scores for all years and months, or none at all.
+
+This is not the case for the MRP, which in a sense may be better for us - this means that we can likely use some sort of moving average to interpolate the values. Let's plot a few of the zips with many missing, and some with few missing.
+
+```{r, echo=FALSE, warning=FALSE}
+ggplot(data=filter(dat, zipcode %in% missing_vals$zipcode[c(2,6, 32:33)]), aes(x=date, y=MRP_1Br, col=as.factor(zipcode), group=zipcode)) + geom_point() + geom_line()
+```
+
+So What is clear is that for some zipcodes data wasn't collected until a later date.
+
+### Adding a days of the month columns
+
+```{r}
+# add monthdays column to normalize other variables
+monthdays <- data.frame("month"=c(1:12), "days_in_month"=c(31,28,31,30,31,30,31,31,30,31,30,31))
+dat <- left_join(dat, monthdays, by="month")
+dat <- dat %>% mutate(pickups_day = pickup/days_in_month,
+                      dropoffs_day = dropoff/days_in_month,
+                      n_issued_day = n_issued/days_in_month,
+                      n_expired_day = n_expired/days_in_month)
+```
+
+
+# Modeling
+
+Let's build some models! We will follow this text: https://www.otexts.org/fpp/1/1
+Thanks Rob Hyndman!
+
+We may compare the results of more sophisticated models we build to very naive forecasts. 
+
+```{r}
+# get the zip with the most data
+top_zip <- ts(filter(arrange(dat, year, month), zipcode==missing_vals$zipcode[1]), deltat=1/12, start=c(2011,01))
+```
+
+
+### Naive forecasting
+
+Naive simply predicts the most recent value of a time series (i.e. ARIMA(0, 1, 0)). Let's see how it performs for a few of the most populated `MRP_1Br` series:
+
+```{r}
+naive_mod <- naive(top_zip[,"MRP_1Br"])
+plot(naive_mod)
+```
+
+### Seasonal Naive
+
+This model simply predicts the value of the corresponding month from the previous year (e.g. predicts Feb 2014 val for Feb 2015)
+
+```{r}
+snaive_mod <- snaive(top_zip[,"MRP_1Br"], h=12)
+plot(snaive_mod)
+```
+
+this is not looking particularly good, but hey, it's a thing!
+
+### Drifting
+
+The drift model is the same as drawing a line between the first and last value and pretending the future will follow that line:
+
+```{r}
+drift_mod <- rwf(top_zip[,"MRP_1Br"], h=12, drift=TRUE)
+plot(drift_mod)
+```
+
+### Box Cox 
+
+It does not appear that Box-Cox'ing the data will help
+```{r}
+lambda <- BoxCox.lambda(top_zip[,"MRP_1Br"]) # = 1.999
+plot(BoxCox(top_zip[,"MRP_1Br"],lambda))
+plot(top_zip[,"MRP_1Br"])
+```
+
+### Removing Variation due to month lengths
+
+It's likely that there is some issue with the taxi and liquor license data in that some of the months are simply longer than other months - we can remove that by dividing them by the number of days in their respective months:
+
+
+```{r}
+plot(top_zip[,'pickup'])
+plot(top_zip[,'pickups_day'])
+plot(top_zip[,'dropoff'])
+plot(top_zip[,'dropoffs_day'])
+plot(top_zip[,'n_issued'])
+plot(top_zip[,'n_expired'])
+```
+
+# Inflation Adjustment
+
+see https://www.otexts.org/fpp/2/4
+
+# Accuracy of Predictions
+
+```{r}
+
+top_zip2 <- window(top_zip,start=2011,end=2013+0.5)
+
+tzfit1 <- meanf(top_zip2[,'MRP_1Br'],h=6)
+tzfit2 <- rwf(top_zip2[,'MRP_1Br'],h=6)
+tzfit3 <- snaive(top_zip2[,'MRP_1Br'],h=6)
+tzfit4 <- forecast(top_zip2[,'MRP_1Br'],h=6, robust=TRUE)
+plot(tzfit3)
+
+accuracy(tzfit1, top_zip[,'MRP_1Br'])
+accuracy(tzfit2, top_zip[,'MRP_1Br'])
+accuracy(tzfit3, top_zip[,'MRP_1Br'])
+accuracy(tzfit4, top_zip[,'MRP_1Br'])
+```
+
+# Fitting a time series linear model 
+
+We can easily fit a time series lm with any of the parameters we wish to include using:
+
+```{r}
+tz_lm <- tslm(MRP_1Br ~   n_issued + n_expired + pickups_day + dropoffs_day, data=top_zip2)
+CV(tz_lm)
+# Predict the reamining values
+tz_lm_preds <- predict(tz_lm, window(top_zip, start=2013.5))
+tz_lm_preds <- ts(tz_lm_preds, deltat=1/12, start=c(2013.5))
+
+plot(top_zip[,'MRP_1Br'], col="blue")
+lines(top_zip2[,'MRP_1Br'], col="black", lwd=1.5)
+lines(tz_lm_preds, col="red")
+
+```
+
+
+# Time Series Decomposition
+
+We can decompose a time series into trend, seasonal, and cyclic. Here we extreact the trend:
+
+```{r}
+top_zip_decomp <- stl(top_zip[,'MRP_1Br'], s.window=12)
+plot(top_zip[,'MRP_1Br'], col="gray",
+ main="MRP trend for the top zip code",
+ ylab="Median Rental Price for 1Br apts", xlab="")
+lines(top_zip_decomp $time.series[,2],col="red",ylab="Trend")
+
+```
+
+And the remaining components:
+
+```{r}
+plot(top_zip_decomp)
+```
+
+This method of decomposition (STL) is recommended over classical decomposition (i.e. a 2x12 moving average for the trend).
+
+### The Seasonally adjusted fit
+
+```{r}
+plot(top_zip[,'MRP_1Br'], col="grey",
+ main="Seasonally Adjusted Fit",
+  xlab="", ylab="MRP_1Br")
+lines(seasadj(top_zip_decomp),col="red",ylab="Seasonally adjusted")
+```
+
+Seasonally adjusted series contain the remainder component as well as the trend-cycle. Therefore they are not “smooth” and “downturns” or “upturns” can be misleading. If the purpose is to look for turning points in the series, and interpret any changes in the series, then it is better to use the trend-cycle component rather than the seasonally adjusted data.
+
+### Forecasting with Decomposition
+
+To forecast a decomposed time series, we separately forecast the seasonal component, and the seasonally adjusted component. 
+It is usually assumed that the seasonal component is unchanging, or changing extremely slowly, and so it is forecast by simply taking the last year of the estimated component. In other words, **a seasonal naïve method is used for the seasonal component**.
+
+```{r}
+fcast <- forecast(top_zip_decomp, method="naive")
+plot(fcast, ylab="MRP 1Br")
+```
+
+# Exponential Smoothing
+
+It is beneficial to give variable weights to observations based on their temporal distance to the points being forecast. This is intutitive - we are more confident in the ability of more recent values to make predictions.
+
+```{r}
+tz_fit_holt <- holt(top_zip[,'MRP_1Br'], alpha=0.8, beta=0.2, h=6) 
+plot(tz_fit_holt, ylab="MRP 1Br", xlab="Year")
+
+```
+
+# Neural net?
+
+```{r}
+feature_matrix <- matrix(top_zip[,c('zhvi', "n_issued_day", "n_expired_day", "pickups_day", "dropoffs_day")], byrow=FALSE, nrow=nrow(top_zip))
+tz_nn_fit <- nnetar(top_zip[,'MRP_1Br'], repeats=100, xreg = feature_matrix)
+plot(forecast(tz_nn_fit, 1, feature_matrix))
+```
+
+```{r, eval=FALSE}
+library(caret)
+creditlog  <- data.frame(score=credit$score,
+ log.savings=log(credit$savings+1),
+ log.income=log(credit$income+1),
+ log.address=log(credit$time.address+1),
+ log.employed=log(credit$time.employed+1),
+ fte=credit$fte, single=credit$single)
+fit  <- avNNet(score ~ log.savings + log.income + log.address +
+ log.employed, data=creditlog, repeats=25, size=3, decay=0.1,
+ linout=TRUE)
+```
+
+# Preparing for ARIMA
+
+We wish to make the data stationary - [that is](https://www.otexts.org/fpp/8/1):
+
+> A stationary time series is one whose properties do not depend on the time at which the series is observed.1 So time series with trends, or with seasonality, are not stationary — the trend and seasonality will affect the value of the time series at different times. On the other hand, a white noise series is stationary — it does not matter when you observe it, it should look much the same at any period of time.
+
+### Auto Arima
+
+```{r}
+tz_aa_fit <- auto.arima(top_zip[,'MRP_1Br'])
+tz_aa_fit
+```
+
+
+# On modeling
+
+It is highly possible that the best model will not be to actually forecast the rental prices into the future, but rather to make a forecast, and use that as a feature in a predictive model for predicting large changes in the MRP
+
+
+```{r,eval=FALSE}
 one_zip <- ggplot(data=filter(dat, zipcode==10004, date > "2009/12/30", date < "2015/01/01", dropoff>100), aes(x=date, y=dropoff, col=month)) + geom_point() + geom_smooth(se=FALSE) + geom_line() + ggtitle("dropoffs per Month in 10003") + guides(col=FALSE)
 
 means_by_year <- filter(dat, year > 2009, year < 2015)  %>% 
@@ -37,6 +410,10 @@ means_by_year <- filter(dat, year > 2009, year < 2015)  %>%
             "Mean_dropoffs"=mean(dropoff, na.rm=TRUE), 
             "Mean_MRP_1Br" = mean(MRP_1Br, na.rm=TRUE),
             "Mean_ZHVI" = mean(zhvi, na.rm=TRUE))
+
+# Weird missing data...
+#means_by_year[which(means_by_year$Mean_dropoffs < 200),]
+
 
 means_by_year$date <- paste0(means_by_year$year, '/', str_pad(means_by_year$month, 2, side='left', '0'), '/15')
 means_by_year$date <- as.Date(means_by_year$date, format="%Y/%m/%d")
@@ -57,10 +434,40 @@ zhvi_one_zip <- ggplot(data=filter(dat, zipcode==10004, date > "2009/12/30", dat
 zhvi_all_zips <- ggplot(data=means_by_year, aes(x=date, y=Mean_ZHVI, col=month))+ geom_point() + geom_smooth(se=FALSE) + geom_line() + ggtitle("Mean ZHVI, All Zips") + guides(col=FALSE)
 
 grid.arrange(one_zip, all_zips, l_one_zip, l_all_zips, MRP_one_zip, MRP_all_zips, zhvi_one_zip, zhvi_all_zips, ncol=2)
-
-# Weird missing data...
-means_by_year[which(means_by_year$Mean_dropoffs < 200),]
-
-
-
 ```
+
+```{r, echo=FALSE, eval=FALSE}
+ggplot(data=means_by_year,
+       aes(x=month,
+           y=Mean_dropoffs,
+           col=as.factor(year),
+           group=as.factor(year))) + geom_line() 
+```
+
+# Goals
+
+The end goal is to predict which areas are most likely to be undergoing gentrification at a given time. Therefore, I will build a time series model to predict year over year, or month over month changes in rental prices which are significantly different than the average month over month change for other regions.
+
+That is, I will need to calculate which areas have the largest m-over-m changes, and classify those as gentrifying?
+
+
+# Some EDA
+
+Let's take a look at the month-over-month differences in dropoffs, pickups, issued, expired, and 1Br apt prices
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

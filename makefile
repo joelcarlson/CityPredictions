@@ -1,3 +1,11 @@
+# Below is data processing
+# Modeling data processing
+data/all_data_processed.csv:data/all_data.csv
+	Rscript scripts/prepare_all_data_for_modeling.R
+
+data/all_data.csv:data/Taxis/taxi_data.csv
+	Rscript scripts/merge_zillow_data_with_features.R
+
 # Below is Taxi data processing
 data/Taxis/taxi_data.csv:data/Taxis/pickle_files/taxi_data.pickle
 	python scripts/combine_taxi_years.py
