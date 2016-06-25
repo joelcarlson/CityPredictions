@@ -1,0 +1,78 @@
+---
+title: "Untitled"
+author: "Joel Carlson"
+date: "June 24, 2016"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+What am I even doooooing.....jesus
+
+```{r}
+dat <- read.csv("../data/all_data_processed.csv")
+dat$date <- as.Date(dat$date)
+
+```
+
+Need to De-trend the data. At the very least we should remove seasonal fluctation.
+
+What needs to be done is, for each individual time series (i.e. zip) you need to extract only the trend. Forget the rest, the trend is smooth and wonderful. Then you can quantify the trend, and make predictions on later data. calculate the trend using data up to 2014/6 and then try to predict what will happen in the remainder of 2014. Model accuracy can be judged using RMSE on the remaining 2014 data (i.e. 2014/7 - 2014/12). The score can be calculated on the mean change in those 6 months. The whole goal of this project is to find those areas where the trend is significantly steeper than average. So we know the average trend, we need to find which are rising above that average. 
+
+On the trend from each zip we can calculate the month over month change, and we will expect it to be much more smooth than calculating it on the raw data. We should do the same for all of the features we wish to use also. going to need a pretty sweet little function to do this.
+
+# Goals
+
+For each zip:
+  - Fit am STL model on data up to 2014/6
+  - From the STL extract the trends for the MRPs of interest, and the features (liquor and taxis)
+  - calculate the month over month changes in the trend data
+  
+Create a model that can predict the month over month changes in MRP *for the next month* given month over month changes in features.
+
+That is, we wish to predict the slope of the increase in rent. Would it be better to predict a true false for whether that zip will increase faster than the average increase?
+
+
+
+We should account for the general trend.
+
+for this we use time series decomposition.
+
+We will acquire the median 1Br MRP for each month, do a time series decomposition, and remove the trend and seasonaility from all the other data
+
+```{r}
+library(forecast)
+
+median_dat <- dat %>% group_by(year, month) %>% summarize(MRP_1Br_med = median(MRP_1Br, na.rm=TRUE))
+median_dat_ts <- ts(median_dat, deltat=1/12, start=c(median_dat$year[1], median_dat$month[1] ))
+plot(median_dat_ts[,'MRP_1Br_med'])
+med_dat_decomp <- stl(median_dat_ts[,'MRP_1Br_med'], s.window=12, robust=TRUE)
+plot(med_dat_decomp)
+```
+
+With the decomposed data in hand, we can remove the seasonality and general trend from our data:
+
+```{r}
+decomp_df <- as.data.frame(med_dat_decomp$time.series)
+decomp_df$year <- median_dat$year
+decomp_df$month <- median_dat$month
+
+dat <- left_join(dat, decomp_df, by=c("year", "month"))
+
+dat <- mutate(dat, MRP_1Br_detrend = MRP_1Br - seasonal - trend)
+
+dat <- dat %>% arrange(zipcode, date) %>% mutate(MRP_1Br_dt_lag = lag(MRP_1Br_detrend),
+                                                 MRP_1Br_lag    = lag(MRP_1Br)) %>%
+  mutate(MRP_1Br_dt_MoM = MRP_1Br_detrend / MRP_1Br_dt_lag,
+         MRP_1Br_MoM = MRP_1Br / MRP_1Br_lag)
+```
+
+So we detrended the data, and then calculated both the detrended MRP 1Br Month over Month and the normal month over month.
+
+```{r}
+ggplot(data=dat, aes(x=date, y=MRP_1Br_MoM)) + geom_point()
+ggplot(data=dat, aes(x=date, y=MRP_1Br_dt_MoM)) + geom_point() + coord_cartesian(ylim=c(0,2))
+```
+

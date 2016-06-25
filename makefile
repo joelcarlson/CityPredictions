@@ -1,5 +1,8 @@
 # Below is data processing
 # Modeling data processing
+data/all_data_with_trends.csv:data/all_data_processed.csv
+	Rscript scripts/get_STL_decompositions.R
+	
 data/all_data_processed.csv:data/all_data.csv
 	Rscript scripts/prepare_all_data_for_modeling.R
 
