@@ -6,7 +6,7 @@ This is a running to do list and accomplishment log
 # Monday June 20
 
 #### Completed:
-    
+
   - Reorganized repo
   - Built make file
   - Finished extracting data from SLA HTML source files
@@ -14,7 +14,7 @@ This is a running to do list and accomplishment log
   - Mergeed .gov liquor data with SLA data (more precise lat longs)
   - Converted .mdb files to CSV files for consumption
     - Will likely not be used, lacking time series information
-    
+
 #### Difficulties
 
   - Spent too much time aimlessly cleaning data
@@ -25,15 +25,15 @@ This is a running to do list and accomplishment log
 
 # Tuesday June 21
 
-  
+
 #### Completed:
-  
+
   - Built first babysteps model
     - Using a prediction target I don't plan to use
     - Without most of the features
-    
+
   - Merge zillow data with liquor data and amenity distance data
-  - Aggregated liquor data by month 
+  - Aggregated liquor data by month
     - Counts of number issued and number expired
   - Extracted XML data from rec locations
     - Saved to a dataframe and complete
@@ -72,20 +72,35 @@ This is a running to do list and accomplishment log
   - Find optimal lag time between parameters and change in rent year over year, or month over month
     - make sure data is properly cleaned
   - Consider clustering similar zipcodes??
-    
 
 
+# Friday June 24
+
+#### To Do
+
+  - Modeling!
+  - Build function to score model predictions
+  - Choose best model (optimize params)
+    - Choose best features
+  - Generalize model to make predictions on all the data!
 
 
+# Tuesday June 27
+
+#### To Do
+
+  - Build visualizations
+  - Validate model predictions
+  - Build prediction pipeline
 
 
 # To do overall
 
   - Mock up site design
   - Think about what analytics to put up when the user clicks an area
-  - Get map bounding boxes for areas or zips or whatever you decide to use 
+  - Get map bounding boxes for areas or zips or whatever you decide to use
   - Think about presentation story
-    - "Before I begin this presentation I want you to think about why this house, which my parents just sold in Calgary Alberta was sold for less than 80% of list price, while this hom (shitty home in NY) sold for double what it was listed for. Of course, you are thinking "well obviously NY is a desirable palce to live", well, wasn't NY a desirable place to live 5 years ago? (graph showing trend in diff between listing and selling, or mention ho this sint necessarily consistent all over NY). What are the factors that are leading to this? More importantly, can we predict whch areas of a city are most likely to experience price increases over and above regular inflation? 
+    - "Before I begin this presentation I want you to think about why this house, which my parents just sold in Calgary Alberta was sold for less than 80% of list price, while this hom (shitty home in NY) sold for double what it was listed for. Of course, you are thinking "well obviously NY is a desirable palce to live", well, wasn't NY a desirable place to live 5 years ago? (graph showing trend in diff between listing and selling, or mention ho this sint necessarily consistent all over NY). What are the factors that are leading to this? More importantly, can we predict whch areas of a city are most likely to experience price increases over and above regular inflation?
     - "I wanted to answer this question, but wanted to do so using features that I thought were novel, which led me to two factors: "
 
 
