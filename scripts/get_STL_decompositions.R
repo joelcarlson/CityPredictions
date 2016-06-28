@@ -54,16 +54,16 @@ get_STL_data_by_zip <- function(dat, zip, ...){
     if (is.null(zip_ts)) next
     stl_df <- get_STL_df_by_variable(zip_ts, variable, zip)
     if (is.null(stl_df)) next
-    dat <- insert_STL_data_into_df(stl_df, dat)
+    dat <- insert_STL_data_into_df(stl_df, dat, zip)
   }
   return(dat)
   
 }
 
-insert_STL_data_into_df <- function(stl_df, dat){
+insert_STL_data_into_df <- function(stl_df, dat, single_zip){
   # replace the values in the main data frame with the new values
   conditional <- which(dat$date %in% stl_df$date &
-                         dat$zipcode == zip)
+                         dat$zipcode == single_zip)
   stl_df <- arrange(stl_df, month, year)
   
   if (nrow(stl_df) == nrow(dat[conditional, colnames(stl_df)])) {
