@@ -10,7 +10,7 @@
 #  5. Make predictions on testing data
 library(dplyr); library(randomForest)
 
-source("get_STL_decompositions.R")
+source("scripts/STL_decomposition_functions.R")
 #load and prepare the data
 load_and_prepare_data <- function(file_path = "../data/all_data_processed.csv"){
   dat <- read.csv(file_path)
@@ -75,7 +75,7 @@ get_STL_curves <- function(train_test_list, variable="MRP_1Br", zips){
   testing <- train_test_list$testing
   
   for(each_zip in zips){
-    
+    message(each_zip)
     training <- get_STL_data_by_zip(dat=training, variable, each_zip)
     testing <- get_STL_data_by_zip(dat=testing, variable, each_zip)
   }
@@ -147,45 +147,69 @@ train_test_rf_model <- function(train_test_STL_lagged_list, target = "MRP_1Br_Mo
   t3 <- paste0(target, "_3")
   t6 <- paste0(target, "_6")
   t12 <- paste0(target, "_12")
+  
+  model_form <- paste(target, "~", paste(t3,t6,t12, sep=" + "))
+  mtry <- 2
 
-  model_form <- paste0(target, " ~ n_issued_MoM_6 + n_expired_MoM_6 + pickups_MoM_6 + dropoffs_MoM_6 + ",
-                         "n_issued_MoM_12 + n_expired_MoM_12 + pickups_MoM_12 + dropoffs_MoM_12")
+  #model_form <- paste0(target, " ~ n_issued_MoM_6 + n_expired_MoM_6 + pickups_MoM_6 + dropoffs_MoM_6 + ",
+  #                       "n_issued_MoM_12 + n_expired_MoM_12 + pickups_MoM_12 + dropoffs_MoM_12")
                        
-  if(full) model_form <- paste0(model_form, " + ", t3, " + ", t6, " + ", t12)
-                      
+  #if(full) model_form <- paste0(model_form, " + ", t3, " + ", t6, " + ", t12)
+  if(full){
+    model_form <- paste0(model_form, " + n_issued_MoM_6 + n_expired_MoM_6 + pickups_MoM_6 + dropoffs_MoM_6 + ",
+                         "n_issued_MoM_12 + n_expired_MoM_12 + pickups_MoM_12 + dropoffs_MoM_12")
+    mtry <- 10
+  }
+  
+  #message(model_form)                    
   full_rf_model <- randomForest(as.formula(model_form),
-                           
                            data=train_test_STL_lagged_list[['training']],
                            na.action = na.omit,
-                           mtry = 7,
+                           mtry = mtry,
                            ntree=500,
                            importance=TRUE,
                            nodesize=5)
   
+  #message("RF Model Trained")
+  #new_rf <<- full_rf_model
+  #fail_data <<- train_test_STL_lagged_list
   predictions <- predict(full_rf_model, train_test_STL_lagged_list[['testing']])
   
+  #message("Made predictions")
   if(full){
+    #message("Checked full")
     train_test_STL_lagged_list[['testing']]$full_rf_preds <- predictions
   } else {
+    #message("checked full")
     train_test_STL_lagged_list[['testing']]$rf_preds <- predictions
   }
   
+  #message("returning data?")
   return(train_test_STL_lagged_list)
 }
 
+# All together now!
+prediction_pipeline <- function(data_path='../data/all_data_processed.csv',
+                         variable="MRP_1Br", train_end_date=c(2014,6), zipcodes=c(11237, 10035)){
+  ## This is where things work!
+  prepped_dat <- load_and_prepare_data(file_path = data_path)
+  #  1. Split data into training and test data based on date
+  train_test <- split_data_into_train_test_sets(dat=prepped_dat, train_end_date)
+  #  2. Fit STL curves by zipcode on the training and the training+test data separately
+  train_test_STL <- get_STL_curves(train_test, variable=variable, zips=zipcodes)
+  #  3. Create lagged features 
+  train_test_STL_lagged <- create_lagged_features(train_test_STL, variable=variable)
+  #  4. Train models on the training data. Models include:
+  #    a. Random forest with all features
+  #    b. Random forest without Liquor and Taxi data
+  #    c. Naive model (i.e. mean of training data)
+  
+  target <- paste0(variable, "_MoM")
+  
+  train_test_STL_lagged <- train_test_naive_model(train_test_STL_lagged, target=target )
+  train_test_STL_lagged <- train_test_rf_model(train_test_STL_lagged, target=target, full=TRUE)
+  train_test_STL_lagged <- train_test_rf_model(train_test_STL_lagged, target=target, full=FALSE)
+  
+  return(train_test_STL_lagged)
+} 
 
-## This is where things work!
-#  1. Split data into training and test data based on date
-dat <- load_and_prepare_data()
-#  2. Fit STL curves by zipcode on the training and the training+test data separately
-train_test <- split_data_into_train_test_sets(dat, train_end_date=c(2014,6))
-train_test_STL <- get_STL_curves(train_test, variable="MRP_1Br", zips=c(11237,10035))
-#  3. Create lagged features 
-train_test_STL_lagged <- create_lagged_features(train_test_STL, variable="MRP_1Br")
-#  4. Train models on the training data. Models include:
-#    a. Random forest with all features
-#    b. Random forest without Liquor and Taxi data
-#    c. Naive model (i.e. mean of training data)
-train_test_STL_lagged <- train_test_naive_model(train_test_STL_lagged, target="MRP_1Br_MoM" )
-train_test_STL_lagged <- train_test_rf_model(train_test_STL_lagged, target="MRP_1Br_MoM", full=TRUE)
-train_test_STL_lagged <- train_test_rf_model(train_test_STL_lagged, target="MRP_1Br_MoM", full=FALSE)
