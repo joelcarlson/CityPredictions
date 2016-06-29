@@ -10,6 +10,10 @@ knitr::opts_chunk$set(echo = TRUE)
 knitr::opts_knit$set(root.dir = "../")
 ```
 
+In this markdown I explore the predicted trendlines for individual zipcodes.
+
+Although trendlines are not the prediction target of this project (change in month over month median rent is), trendlines are perhaps a more intuitive visualization a lay audience. 
+
 ```{r, message=FALSE, warning=FALSE}
 source("scripts/transform_model_predict_pipeline.R")
 library(reshape2); library(ggplot2); library(dplyr); library(lazyeval)

@@ -1,0 +1,11 @@
+base
+methods
+datasets
+utils
+grDevices
+graphics
+stats
+reshape2
+dplyr
+ggplot2
+lazyeval

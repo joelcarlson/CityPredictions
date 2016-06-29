@@ -163,10 +163,6 @@ train_test_rf_model <- function(train_test_STL_lagged_list, target = "MRP_1Br_Mo
   mtry <- 10
   ntree <- 500
 
-  #model_form <- paste0(target, " ~ n_issued_MoM_6 + n_expired_MoM_6 + pickups_MoM_6 + dropoffs_MoM_6 + ",
-  #                       "n_issued_MoM_12 + n_expired_MoM_12 + pickups_MoM_12 + dropoffs_MoM_12")
-                       
-  #if(full) model_form <- paste0(model_form, " + ", t3, " + ", t6, " + ", t12)
   if(full){
     model_form <- paste0(model_form, " + ",
                          paste0(c("n_issued_MoM_",

@@ -1,9 +1,11 @@
 # Now we have to deal with all of those CSV files we wrote....
+library(lazyeval)
+library(dplyr)
 
 RMSE <- function(actual, predicted, na.rm=TRUE){
   return(sqrt(mean(actual - predicted, na.rm=na.rm)^2))
 }
-# So we are interested in the difference between the target and
+# Extract the difference between the target and
 # naive_preds, full_rf_preds, and rf_preds for data after the 
 # train end date
 extract_testing_RMSE_SD <- function(target, file_paths){
@@ -33,6 +35,8 @@ extract_testing_RMSE_SD <- function(target, file_paths){
   }
   return(do.call(rbind.data.frame,dat_lst))
 }
+
+
 
 
 
