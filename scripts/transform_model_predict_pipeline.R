@@ -12,7 +12,7 @@ library(dplyr); library(randomForest)
 
 source("scripts/STL_decomposition_functions.R")
 #load and prepare the data
-load_and_prepare_data <- function(file_path = "../data/all_data_processed.csv"){
+load_and_prepare_data <- function(file_path = "data/all_data_processed.csv"){
   dat <- read.csv(file_path)
   dat$date <- as.Date(dat$date)
   
@@ -59,7 +59,7 @@ get_STL_data_by_zip <- function(dat, target="MRP_1Br", single_zip){
 
 # Function to split data into training and test sets based on end date for training
 split_data_into_train_test_sets <- function(dat, train_end_date = c(2014,6)){
-  date_str <- as.Date(paste0(train_end_date[1], '-', train_end_date[2],'-15'))
+  date_str <- paste0(train_end_date[1], '-', train_end_date[2],'-15')
   training <- filter(dat, date <= date_str)
   # testing remains all of dat as we wish to predict the trend that is produced.
   # The trend is to be informed by historical values 
@@ -80,7 +80,7 @@ get_STL_curves <- function(train_test_list, variable="MRP_1Br", zips){
     testing <- get_STL_data_by_zip(dat=testing, variable, each_zip)
   }
   
-  return(list("training"=training, "testing"=testing, "train_end_date"=train_test_list$date_str))
+  return(list("training"=training, "testing"=testing, "train_end_date"=train_test_list['train_end_date']))
 }
 
 # Function to create lagged features in training and testing sets
@@ -127,10 +127,12 @@ create_lagged_features <- function(train_test_STL_list, variable="MRP_1Br"){
     
     train_test_STL_lagged[[item]] <- dat
   }
+  train_test_STL_lagged['train_end_date'] <- train_test_STL_list[["train_end_date"]]
   return(train_test_STL_lagged)
 }
 
 train_test_naive_model <- function(train_test_STL_lagged_list, target = "MRP_1Br_MoM"){
+
   # The naive model predicts the mean of the training set target variable
   predictions <- mean(train_test_STL_lagged_list[['training']][[target]], na.rm=TRUE)
   train_test_STL_lagged_list[['testing']]$naive_preds <- predictions
@@ -143,22 +145,37 @@ train_test_rf_model <- function(train_test_STL_lagged_list, target = "MRP_1Br_Mo
   # i.e. if data on a 3 month lag is included, then the furthest the model can predict is 
   # 3 months into the future
   
+  # Model parameters tuned in scripts/gridsearch_rf_model_parameters.R
+  
   set.seed(111)
   t3 <- paste0(target, "_3")
+  t4 <- paste0(target, "_4")
+  t5 <- paste0(target, "_5")
   t6 <- paste0(target, "_6")
+  t7 <- paste0(target, "_7")
+  t8 <- paste0(target, "_8")
+  t9 <- paste0(target, "_9")
+  t10 <- paste0(target, "_10")
+  t11 <- paste0(target, "_11")
   t12 <- paste0(target, "_12")
   
-  model_form <- paste(target, "~", paste(t3,t6,t12, sep=" + "))
-  mtry <- 2
+  model_form <- paste(target, "~", paste(t3,t4,t5,t6,t7,t8,t9,t10,t11,t12, sep=" + "))
+  mtry <- 10
+  ntree <- 500
 
   #model_form <- paste0(target, " ~ n_issued_MoM_6 + n_expired_MoM_6 + pickups_MoM_6 + dropoffs_MoM_6 + ",
   #                       "n_issued_MoM_12 + n_expired_MoM_12 + pickups_MoM_12 + dropoffs_MoM_12")
                        
   #if(full) model_form <- paste0(model_form, " + ", t3, " + ", t6, " + ", t12)
   if(full){
-    model_form <- paste0(model_form, " + n_issued_MoM_6 + n_expired_MoM_6 + pickups_MoM_6 + dropoffs_MoM_6 + ",
-                         "n_issued_MoM_12 + n_expired_MoM_12 + pickups_MoM_12 + dropoffs_MoM_12")
-    mtry <- 10
+    model_form <- paste0(model_form, " + ",
+                         paste0(c("n_issued_MoM_",
+                                  "n_expired_MoM_",
+                                  "pickups_MoM_",
+                                  "dropoffs_MoM_"),
+                                rep(c(1:12),4), collapse=" + "), collapse=" + ")
+    mtry <- 15
+    ntree <- 1000
   }
   
   #message(model_form)                    
@@ -166,9 +183,9 @@ train_test_rf_model <- function(train_test_STL_lagged_list, target = "MRP_1Br_Mo
                            data=train_test_STL_lagged_list[['training']],
                            na.action = na.omit,
                            mtry = mtry,
-                           ntree=500,
+                           ntree=ntree,
                            importance=TRUE,
-                           nodesize=5)
+                           nodesize=10)
   
   #message("RF Model Trained")
   #new_rf <<- full_rf_model
@@ -189,7 +206,7 @@ train_test_rf_model <- function(train_test_STL_lagged_list, target = "MRP_1Br_Mo
 }
 
 # All together now!
-prediction_pipeline <- function(data_path='../data/all_data_processed.csv',
+prediction_pipeline <- function(data_path='data/all_data_processed.csv',
                          variable="MRP_1Br", train_end_date=c(2014,6), zipcodes=c(11237, 10035)){
   ## This is where things work!
   prepped_dat <- load_and_prepare_data(file_path = data_path)
@@ -203,13 +220,16 @@ prediction_pipeline <- function(data_path='../data/all_data_processed.csv',
   #    a. Random forest with all features
   #    b. Random forest without Liquor and Taxi data
   #    c. Naive model (i.e. mean of training data)
-  
   target <- paste0(variable, "_MoM")
   
   train_test_STL_lagged <- train_test_naive_model(train_test_STL_lagged, target=target )
   train_test_STL_lagged <- train_test_rf_model(train_test_STL_lagged, target=target, full=TRUE)
   train_test_STL_lagged <- train_test_rf_model(train_test_STL_lagged, target=target, full=FALSE)
   
+  train_end_date <- train_test_STL_lagged[['train_end_date']]
+  train_test_STL_lagged[['testing']]$train_end_date <- train_end_date 
+  train_test_STL_lagged[['training']]$train_end_date <- train_end_date
+               #$train_end_date <- train_end_date
   return(train_test_STL_lagged)
 } 
 

@@ -1,0 +1,28 @@
+---
+title: "Analyze RMSE and SD of Predictions"
+author: "Joel Carlson"
+date: "June 29, 2016"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+
+base_path <- "data/temp/"
+testing_paths_1Br <- list.files(base_path, pattern="MRP_1Br_testing")
+testing_paths_2Br <- list.files(base_path, pattern="MRP_2Br_testing")
+
+z$date <- as.Date(z$date)
+z$train_end_date <- as.Date(z$train_end_date)
+
+z <- extract_testing_RMSE_SD("MRP_1Br_MoM", testing_paths_1Br)
+
+z$months_in_future <- cut(as.numeric(z$days_in_future), breaks=seq(from=1, to=365, length.out=13), labels=c(1:12))
+ggplot(data=filter(z, days_in_future <= 365),
+       aes(x=months_in_future, y=full_rf_RMSE, group=months_in_future)) +
+  geom_boxplot() #+ 
+  #scale_color_viridis(discrete = TRUE)
+```
