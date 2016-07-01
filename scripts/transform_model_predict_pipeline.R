@@ -42,7 +42,7 @@ get_STL_data_by_zip <- function(dat, target="MRP_1Br", single_zip){
   filtered_dat <- dat %>% 
     filter(zipcode == single_zip) %>% 
     arrange(date) %>% 
-    select(one_of(indices), one_of(var_list))
+    dplyr::select(one_of(indices), one_of(var_list))
   
   end_date <- c(filtered_dat$year[nrow(filtered_dat)], filtered_dat$month[nrow(filtered_dat)])
   

@@ -26,7 +26,7 @@ RMSE <- function(actual, predicted, na.rm=TRUE){
   return(sqrt(mean(actual - predicted, na.rm=na.rm)^2))
 }
 
-extract_testing_trend_RMSE_SD_MRP_1Br <- function(file_paths){
+extract_testing_trend_RMSE_SD_MRP_1Br <- function(file_paths, by_zip=FALSE){
   
   dat_lst <- list()
   # This function could be generalized by making 
@@ -44,7 +44,7 @@ extract_testing_trend_RMSE_SD_MRP_1Br <- function(file_paths){
     
     # Acquire useful columns
     dat <- filter(dat, !is.na(MRP_1Br)) %>% 
-      select(year, month, zipcode, date, train_end_date,
+      dplyr::select(year, month, zipcode, date, train_end_date,
              MRP_1Br, MRP_1Br_trend, MRP_1Br_remainder, MRP_1Br_seasonal,
              MRP_1Br_MoM, MRP_1Br_raw_MoM,
              naive_preds, rf_preds, full_rf_preds)
@@ -55,7 +55,7 @@ extract_testing_trend_RMSE_SD_MRP_1Br <- function(file_paths){
       group_by(zipcode) %>% 
       do({
         m <- filter(., !is.na(full_rf_preds)) %>% 
-          select(date, train_end_date, zipcode, MRP_1Br, MRP_1Br_trend, full_rf_preds, rf_preds, naive_preds)
+          dplyr::select(date, train_end_date, zipcode, MRP_1Br, MRP_1Br_trend, full_rf_preds, rf_preds, naive_preds)
         try(
           m$rf_trend_preds <- prop_MoM(m$MRP_1Br_trend[1], m$rf_preds),
           silent=TRUE)
@@ -68,16 +68,31 @@ extract_testing_trend_RMSE_SD_MRP_1Br <- function(file_paths){
         m
       })
   
-    trend_RMSE_SD <- trend_predictions %>%
-      filter(date > train_end_date) %>% 
-      mutate(days_in_future = date - train_end_date) %>% 
-      group_by(date, days_in_future, zipcode) %>%
-      summarise_(naive_trend_RMSE = interp(~ RMSE(target, naive_trend_preds), target=as.name(target)),
-                 naive_trend_SD = interp(~ sd(naive_trend_preds, na.rm=TRUE)),
-                 rf_trend_RMSE = interp(~ RMSE(target, rf_trend_preds), target=as.name(target)),
-                 rf_trend_SD = interp(~ sd(rf_trend_preds, na.rm=TRUE)),
-                 full_rf_trend_RMSE = interp(~ RMSE(target, full_rf_trend_preds), target=as.name(target)),
-                 full_rf_trend_SD = interp(~ sd(full_rf_trend_preds, na.rm=TRUE)))
+    if(by_zip){
+      trend_RMSE_SD <- trend_predictions %>%
+        filter(date > train_end_date) %>% 
+        mutate(days_in_future = date - train_end_date) %>% 
+        group_by(date, days_in_future, zipcode) %>%
+        summarise_(naive_trend_RMSE = interp(~ RMSE(target, naive_trend_preds), target=as.name(target)),
+                   naive_trend_SD = interp(~ sd(naive_trend_preds, na.rm=TRUE)),
+                   rf_trend_RMSE = interp(~ RMSE(target, rf_trend_preds), target=as.name(target)),
+                   rf_trend_SD = interp(~ sd(rf_trend_preds, na.rm=TRUE)),
+                   full_rf_trend_RMSE = interp(~ RMSE(target, full_rf_trend_preds), target=as.name(target)),
+                   full_rf_trend_SD = interp(~ sd(full_rf_trend_preds, na.rm=TRUE)))
+      
+    } else{
+      trend_RMSE_SD <- trend_predictions %>%
+        filter(date > train_end_date) %>% 
+        mutate(days_in_future = date - train_end_date) %>% 
+        group_by(date, days_in_future) %>%
+        summarise_(naive_trend_RMSE = interp(~ RMSE(target, naive_trend_preds), target=as.name(target)),
+                   naive_trend_SD = interp(~ sd(naive_trend_preds, na.rm=TRUE)),
+                   rf_trend_RMSE = interp(~ RMSE(target, rf_trend_preds), target=as.name(target)),
+                   rf_trend_SD = interp(~ sd(rf_trend_preds, na.rm=TRUE)),
+                   full_rf_trend_RMSE = interp(~ RMSE(target, full_rf_trend_preds), target=as.name(target)),
+                   full_rf_trend_SD = interp(~ sd(full_rf_trend_preds, na.rm=TRUE)))
+    }
+
     
     dat_lst[[train_end_date]] <- trend_RMSE_SD
 
