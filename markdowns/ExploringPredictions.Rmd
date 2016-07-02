@@ -125,6 +125,3 @@ ggplot(data=filter(tz, zipcode == 11212),
 
 
 
-
-
-
