@@ -84,7 +84,7 @@ A further test of the predictive ability of the liquor and taxi data is given by
 
 We can visualize the accuracy of the predictions by extrapolating a trendline using the predicted changes. That is, we train a model using data up to a certain date, and predict the changes in median rental price after that date. We then extract the rental price at the final date of the training data from a given zipcode. We can then predict the rental price in that zipcode by successively multiplying the predicted change by the current price. This is shown below, along with the bootstrapped RMSE of the models as a function of time from the last training point:
 
-<img src="https://raw.githubusercontent.com/joelcarlson/CityPredictions/master/figures/trend_rmse.png" height="50%" width="100%" />
+<img src="https://raw.githubusercontent.com/joelcarlson/CityPredictions/master/figures/trend_preds_rmse.png" height="50%" width="100%" />
 
 
 
