@@ -44,19 +44,47 @@ Scripts for downloading, cleaning, and combining the data can be found [here]()[
 
 For a complete listing of the data sources considered and compiled for this project, see [data.md](https://github.com/joelcarlson/CityPredictions/blob/master/data.md)
 
-### Data Pipeline
+### Extracting Trends from the Data
 
 The prediction target for this project is not the median monthly rental price in a given zipcode, rather it is the *change* in monthly rental price. Therefore the monthly changes must be extracted from each zipcode, shown below:
 
 <img src="https://raw.githubusercontent.com/joelcarlson/CityPredictions/master/figures/MRP_raw_and_MoM.png" height="50%" width="50%" />
 
-This is, in a word, noise. To coerce the data into a better behaved form I used STL decomposition to remove the seasonal component, and create a useful trendline. 
+This is, in a word, noise. To coerce the data into a better behaved form I used STL decomposition to remove the seasonal component, and create a useful trendline. This was completed on all zipcodes in NYC.
 
-The decomposition and resulting better behaved prediction target:
-
+The decomposition and resulting better behaved prediction target for a representative zipcode:
 
 <img src="https://raw.githubusercontent.com/joelcarlson/CityPredictions/master/figures/MRP_2_STL_superimposed.png" height="50%" width="100%" />
 
+Trends were also extracted from the liquor license and taxi time series data.
+
+### Building Models to Predict Changes
+
+Several different models were built to predict the changes in monthly median rental prices. 
+
+#### Naive 
+
+The most naive approach, built to serve as a basis for comparison, is a model which predicts that the change each month will be the same as the average monthly change of the training data.
+
+#### Vector Autoregression (VAR)
+
+VAR modeling is a classical time series forecasting approach. VAR models allow the use of multiple time series for forecasting. Thus, for each zipcode a VAR model was built using the changes in monthly rental prices lagged from 3 to 12 months, the liquor license data, and the taxi pickup and dropoff data (on the same lag timeline).
+
+#### Random Forest
+
+Random forests are not a typical method for forecasting time series data. However, lagged time series data can be thought of as features for modeling. Thus, random forest models were built utilizing the entire dataset (that is, using data from all zipcodes). This allows for a much more general model that is not coupled to an individual zipcode. A model, from here referred to as "RF", was built using only lagged changes in the monthly rental price (from 3 to 12 months). A second model was built using the lagged data, along with lagged liquor and taxi data, from here referred to as "Full RF".
+
+### Model Goals
+
+The VAR model tests the statistical hypothesis that, for a given zipcode, impulses in the liquor or taxi data are related to changes in the rental prices. 
+
+A further test of the predictive ability of the liquor and taxi data is given by the random forest models. If the liquor and taxi data predicts the changes in rental price, then we would expect the model including the liquor and taxi data (Full RF) to have better forecasting accuracy than the model without (RF).
+
+### Forecasting Changes in Rental Prices
+
+We can visualize the accuracy of the predictions by extrapolating a trendline using the predicted changes. That is, we train a model using data up to a certain date, and predict the changes in median rental price after that date. We then extract the rental price at the final date of the training data from a given zipcode. We can then predict the rental price in that zipcode by successively multiplying the predicted change by the current price. This is shown below, along with the bootstrapped RMSE of the models as a function of time from the last training point:
+
+<img src="https://raw.githubusercontent.com/joelcarlson/CityPredictions/master/figures/trend_rmse.png" height="50%" width="100%" />
 
 
 
