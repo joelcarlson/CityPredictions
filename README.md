@@ -44,9 +44,11 @@ Scripts for downloading, cleaning, and combining the data can be found [here]()[
 
 For a complete listing of the data sources considered and compiled for this project, see [data.md](https://github.com/joelcarlson/CityPredictions/blob/master/data.md)
 
-### 
+### Data Pipeline
 
+The prediction target for this project is not the median monthly rental price in a given zipcode, rather it is the *change* in monthly rental price. Therefore the monthly changes must be extracted from each zipcode, shown below:
 
+<img src="https://raw.githubusercontent.com/joelcarlson/CityPredictions/master/figures/MRP_raw_and_MoM.png" height="50%" width="50%" />
 
 
 
