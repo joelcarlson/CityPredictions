@@ -50,7 +50,10 @@ The prediction target for this project is not the median monthly rental price in
 
 <img src="https://raw.githubusercontent.com/joelcarlson/CityPredictions/master/figures/MRP_raw_and_MoM.png" height="50%" width="50%" />
 
+This is, in a word, noise. To coerce the data into a better behaved form I used STL decomposition to remove the seasonal component, and create a useful trendline. 
 
+The decomposition and resulting better behaved prediction target:
 
-
+<img src="https://raw.githubusercontent.com/joelcarlson/CityPredictions/master/figures/MRP_2_STL.png" height="50%" width="50%" />
+<img src="https://raw.githubusercontent.com/joelcarlson/CityPredictions/master/figures/MRP_trend_and_MoM.png" height="50%" width="50%" />
 
