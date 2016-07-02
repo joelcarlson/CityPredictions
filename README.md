@@ -38,7 +38,7 @@ Liquor licenses were downloaded from the [New York Liquor Authority database](ht
 
 [Rental prices from Zillow](http://www.zillow.com/research/data/#median-home-value) were used as prediction targets.
 
-<img src="https://raw.githubusercontent.com/joelcarlson/CityPredictions/master/figures/MRP_by_Borough_single.png" height="25%">
+<img src="https://raw.githubusercontent.com/joelcarlson/CityPredictions/master/figures/MRP_by_Borough_single.png" height="50%" width="50%" />
 
 Scripts for downloading, cleaning, and combining the data can be found [here]()[here]()[here]().
 
