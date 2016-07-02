@@ -1,15 +1,47 @@
-# Now we have to deal with all of those CSV files we wrote....
+ # Extract_RMSE_SD_from_predictions.R
+ # The functions in this script operate on the CSV outputs
+ # of the functions in the
+ # script: "get_sequential_model_predictions.R"
+
 library(lazyeval)
 library(dplyr)
 
 RMSE <- function(actual, predicted, na.rm=TRUE){
+  # RMSE
+  # ----
+  # Parameters:
+  #  actual: numeric
+  #    true values of a given prediction target
+  #  predicted: numeric
+  #    predicted values of a given prediction target
+  #  na.rm: boolean
+  #    should NA values be included in calculation
+  #
+  # Returns:
+  #  scalar
+  #    The root mean squared error between
+  #    actual and predicted vectors
   return(sqrt(mean(actual - predicted, na.rm=na.rm)^2))
 }
-# Extract the difference between the target and
-# naive_preds, full_rf_preds, and rf_preds for data after the 
-# train end date
+
 extract_testing_RMSE_SD <- function(target, file_paths){
-  
+  # extract_testing_RMSE_SD
+  #   Extract the difference between the target and
+  #   naive_preds, full_rf_preds, and rf_preds for data after the 
+  #   train end date. 
+  # ----
+  # Parameters:
+  #  target: character
+  #    quoted column name of prediction target
+  #    example: "MRP_1Br_MoM"
+  #  file_path:
+  #    directory containing CSV files produced
+  #    by the script: "get_sequential_model_predictions.R"
+  #
+  # Returns:
+  #  data.frame
+  #    Data frame containing the RMSE and SD of the listed
+  #    predictors (naive, full rf, rf)
   dat_lst <- list()
   
   for(training_end_file_path in file_paths){

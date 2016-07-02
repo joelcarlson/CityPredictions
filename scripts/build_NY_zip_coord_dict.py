@@ -1,6 +1,25 @@
 from geopy.geocoders import Nominatim
 import pickle
 
+"""
+build_NY_zip_coord_dict.py
+
+This script creates a pickle object in the data/NY_Info/
+directory which contains the zipcodes of each borough of 
+New York City.
+
+    Parameters
+    ----------
+    none
+
+    Returns
+    -------
+    none
+
+
+
+"""
+
 manhattan = [10001,10002,10003,10004,10005,
              10006,10007,10009,10010,10011,
              10012,10013,10014,10016,10017,

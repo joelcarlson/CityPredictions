@@ -1,6 +1,3 @@
-# CityPredictions
-Galvanize Capstone
-
 # Data
 
 Listing of data sources
