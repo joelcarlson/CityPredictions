@@ -1,4 +1,4 @@
-# Predicting Changes in Rental Unit Prices in NYC
+<img src="https://raw.githubusercontent.com/joelcarlson/CityPredictions/master/figures/title_card.png" width="100%" />
 
 The goal of this project was to test two hypotheses:
 
@@ -84,11 +84,13 @@ We can visualize the accuracy of the predictions by extrapolating a trendline us
 
 <img src="https://raw.githubusercontent.com/joelcarlson/CityPredictions/master/figures/trend_preds_rmse.png" height="50%" width="100%" />
 
-Clearly the VAR model and naive model perform poorly. The VAR model failed to find a statistically significant relationship between either the taxi and rental price data, or the liquor license and rental price data. Sad news for the hypotheses.
+The VAR model and naive model are clearly outperformed by the random forest models. Unfortunately, the VAR model failed to find statistically significant relationships between either the taxi and rental price data, or the liquor license and rental price data. Sad news for the hypotheses.
 
 The nail in the coffin for the two hypotheses is clear in the RMSE plot - there is no added predictive power from including the taxi and liquor data.
 
-However, we do have a models which predict rental prices much more accurately than simply predicting the average change (naive)! 
+However, we do have models which predict rental prices much more accurately than simply predicting the average change (naive)! 
 
-## 
+## How can we Interpret the Models?
+
+Although in general the liquor and taxi data do not increase the forecasting accuracy of the models, in approximately 20% of the zipcodes the liquor and taxi does indeed produce better models. Why is this?
 
