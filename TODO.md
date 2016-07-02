@@ -104,7 +104,67 @@ This is a running to do list and accomplishment log
     - "I wanted to answer this question, but wanted to do so using features that I thought were novel, which led me to two factors: "
 
 
+# Monday June 26
 
-```python
+### last week:
+  - Decided to use MRP month over month change as the prediction target 
 
-```
+  - Model was performing very poorly using raw data - highly volatile within each zip code
+  - Instead of using raw data, use STL decomposition on the time series to extract trends, then calculate month over month change in the trend
+  - Able to predict this better than the mean using random forest
+
+  - Now decoupled from the time (because of lagged features)
+
+  - variable importance seems to indicate correct hypotheses
+  - pickups and drop-offs lagged by a year seem to offer most predictive ability 
+
+
+### Today 
+
+  - Tune model
+
+# Tuesday June 27
+
+###Yesterday:
+
+  - Built models 
+    - It seems liquor and taxis, although they are not the most important, they do increase test set accuracy slightly
+  - Built model validation pipeline
+  - Created some nice visualizations
+
+### Today
+
+  -  Further validate predictions, ensure nothing from test is leaking into training
+  - operationalize training/predicting/testing pipeline  
+  - create visualizations of predictive performance with and without taxi and liquor data
+  - Work on vector autoregression to make statistical claims on effects of liquor/taxis
+
+# Wednesday June 28
+
+### Yesterday
+    
+    - built pipeline to make train test splits, fit trends, check accuracy
+    - Created a script for performing grid search over n_trees, variables per split, terminal leaf size
+        - liquor and taxi data may not actually contribute to accuracy
+    - acquired accuracy as a function of time away from prediction
+    - built methods for reconstructing trends from month over month changes
+    
+### Today
+    
+    - Build trend predictions for each zip code using predictions from each model?
+     
+    - exploring results, Creating story, visualizations, cleaning up code 
+
+
+# Thursday June 30
+
+### Yesterday
+
+  - Had previously only really investigated influence of liquor and taxi data by using difference in CV accuracy of models with and without them
+    - sort of ad-hoc, was looking for more “classical” method
+  - Built vector autoregression models with lags up to a year, investigated impulse response of L + T data on month over month changes in rent - no statistically significant. Final nail in coffin for my hypothesis
+  - Built some visualizations, thought about presentation flow, began slides
+
+### Today
+
+  - viz, story, preds
