@@ -1,9 +1,25 @@
-# CityPredictions
-Galvanize Capstone
+# Predicting Rental Unit Prices in NYC
+
+### Galvanize Capstone
+
+Welcome to the repo for my capstone project for the [Galvanize](http://www.galvanize.com/) Data Science Bootcamp!g
+
+To build this project, clone the repo and run make from the base directory using:
+
+```
+git clone https://github.com/joelcarlson/CityPredictions.git
+
+cd CityPredictions
+
+make
+```
+
+
+# Motivation
 
 # Data
 
-For a complete listing of the data sources considered and compiled for this project, see [data.md](http://github.com/joelcarlson/CityPredictions/data.md)
+For a complete listing of the data sources considered and compiled for this project, see [data.md](https://github.com/joelcarlson/CityPredictions/blob/master/data.md)
 
 ### Taxis
 
