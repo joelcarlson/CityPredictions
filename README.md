@@ -26,9 +26,7 @@ cd CityPredictions
 make
 ```
 
-## Methods
-
-### The Data
+## The Data
 
 Data for this project came primarily from three sources:
 
@@ -44,7 +42,7 @@ Scripts for downloading, cleaning, and combining the data can be found [here]()[
 
 For a complete listing of the data sources considered and compiled for this project, see [data.md](https://github.com/joelcarlson/CityPredictions/blob/master/data.md)
 
-### Extracting Trends from the Data
+## Extracting Trends from the Data
 
 The prediction target for this project is not the median monthly rental price in a given zipcode, rather it is the *change* in monthly rental price. Therefore the monthly changes must be extracted from each zipcode, shown below:
 
@@ -58,7 +56,7 @@ The decomposition and resulting better behaved prediction target for a represent
 
 Trends were also extracted from the liquor license and taxi time series data.
 
-### Building Models to Predict Changes
+## Building Models to Predict Changes
 
 Several different models were built to predict the changes in monthly median rental prices. 
 
@@ -74,17 +72,23 @@ VAR modeling is a classical time series forecasting approach. VAR models allow t
 
 Random forests are not a typical method for forecasting time series data. However, lagged time series data can be thought of as features for modeling. Thus, random forest models were built utilizing the entire dataset (that is, using data from all zipcodes). This allows for a much more general model that is not coupled to an individual zipcode. A model, from here referred to as "RF", was built using only lagged changes in the monthly rental price (from 3 to 12 months). A second model was built using the lagged data, along with lagged liquor and taxi data, from here referred to as "Full RF".
 
-### Model Goals
+#### Model Goals
 
 The VAR model tests the statistical hypothesis that, for a given zipcode, impulses in the liquor or taxi data are related to changes in the rental prices. 
 
 A further test of the predictive ability of the liquor and taxi data is given by the random forest models. If the liquor and taxi data predicts the changes in rental price, then we would expect the model including the liquor and taxi data (Full RF) to have better forecasting accuracy than the model without (RF).
 
-### Forecasting Changes in Rental Prices
+## Forecasting Changes in Rental Prices
 
 We can visualize the accuracy of the predictions by extrapolating a trendline using the predicted changes. That is, we train a model using data up to a certain date, and predict the changes in median rental price after that date. We then extract the rental price at the final date of the training data from a given zipcode. We can then predict the rental price in that zipcode by successively multiplying the predicted change by the current price. This is shown below, along with the bootstrapped RMSE of the models as a function of time from the last training point:
 
 <img src="https://raw.githubusercontent.com/joelcarlson/CityPredictions/master/figures/trend_preds_rmse.png" height="50%" width="100%" />
 
+Clearly the VAR model and naive model perform poorly. The VAR model failed to find a statistically significant relationship between either the taxi and rental price data, or the liquor license and rental price data. Sad news for the hypotheses.
 
+The nail in the coffin for the two hypotheses is clear in the RMSE plot - there is no added predictive power from including the taxi and liquor data.
+
+However, we do have a models which predict rental prices much more accurately than simply predicting the average change (naive)! 
+
+## 
 
