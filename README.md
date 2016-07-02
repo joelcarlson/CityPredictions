@@ -54,6 +54,21 @@ This is, in a word, noise. To coerce the data into a better behaved form I used 
 
 The decomposition and resulting better behaved prediction target:
 
-<img src="https://raw.githubusercontent.com/joelcarlson/CityPredictions/master/figures/MRP_2_STL.png" height="50%" width="50%" />
-<img src="https://raw.githubusercontent.com/joelcarlson/CityPredictions/master/figures/MRP_trend_and_MoM.png" height="50%" width="50%" />
+<style>
+    div.container {
+      display:inline-block;
+    }
+
+    p {
+      text-align:center;
+    }
+</style>
+<div class="container">
+	<img src="https://raw.githubusercontent.com/joelcarlson/CityPredictions/master/figures/MRP_2_STL.png" height="50%" width="50%" />
+</div>
+<div class="container">
+	<img src="https://raw.githubusercontent.com/joelcarlson/CityPredictions/master/figures/MRP_trend_and_MoM.png" height="50%" width="50%" />
+</div>
+
+
 
