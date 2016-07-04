@@ -90,7 +90,14 @@ The nail in the coffin for the two hypotheses is clear in the RMSE plot - there 
 
 However, we do have models which predict rental prices much more accurately than simply predicting the average change (naive)! 
 
-## How can we Interpret the Models?
+## What Can We Learn From the Models?
 
-Although in general the liquor and taxi data do not increase the forecasting accuracy of the models, in approximately 20% of the zipcodes the liquor and taxi does indeed produce better models. Why is this?
+Although overall including the liquor and taxi data does not improve predictive accuracy, there is a somewhat bimodal distribution in the difference between the accuracy of the models with and without the liquor and taxi data. If we highlight the zipcodes for which including the liquor and taxi data creates better models on a map we acquire the following:
+
+<img src="https://raw.githubusercontent.com/joelcarlson/CityPredictions/master/figures/L_and_T_map_with_NYU.png" height="50%" width="100%" />
+
+On the left is a map published by the [NYU Furman Center for Urban Planning and Public Policy](http://furmancenter.org/) which highlights regions which are undergoing gentrification. On the right is the map produced by highlighting regions where inclusion of liquor and taxi data improves model performance. We see that there is almost complete overlap. A notable exception is the region near Citi Field (on the map on the right), which is more recently getting lots of media attention related to gentrification.
+
+Perhaps there is some signal after all.
+
 
