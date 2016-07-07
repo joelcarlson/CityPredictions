@@ -14,8 +14,11 @@ This involves a number of steps which are abstracted away into the scripts which
 
   1. Create a training and a testing set where the test set contains N days worth of the data
     - If this is the first iteration, N = 1
-  2. Build a model on the training set only
-  3. Predict the changes in rent of the test set
+  2. Perform seasonal trend decomposition:
+     - On the training data
+     - On the training + testing data
+  4. Build a model on the training set smoothed changes only
+  3. Predict the smoothed changes in rent of the test set
   4. Reconstruct the trend line of the testing data using the last point in the training data and the predicted changes
   5. Calculate the RMSE of the reconstructed trend line as a function of time from the final training point
   6. Repeat until the the training set is too small to construct a model
