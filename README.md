@@ -28,6 +28,8 @@ make
 
 To get a more detailed look at the process, see the markdown documents [here](https://github.com/joelcarlson/CityPredictions/tree/master/markdowns).
 
+See the presentation I gave at Galvanize related to this work [here](http://www.slideshare.net/JoelCarlson2/predicting-rental-prices-in-nyc)
+
 ## The Data
 
 Data for this project came primarily from three sources:
